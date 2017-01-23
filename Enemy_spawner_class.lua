@@ -1,17 +1,17 @@
 Enemy_spawner = {}
 
-function Enemy_spawner.new(x, y, N, speed, radius, collision_group)
+function Enemy_spawner.new(x, y, N, speed, radius, collision_group, color)
 	enemy_spawner = {}
 	setmetatable(enemy_spawner, {__index = Enemy_spawner})
-	enemy_spawner.color = {255,255,255,1}
+	enemy_spawner.color = color
 	enemy_spawner.x = x
 	enemy_spawner.y = y
 	enemy_spawner.N = N
 	enemy_spawner.speed = speed
 	enemy_spawner.radius = radius
-	enemy_spawner.counter = 1
-	enemy_spawner.collision_group = 2
-	enemy_spawner.hp = 5
+	enemy_spawner.counter = 0
+	enemy_spawner.collision_group = collision_group
+	enemy_spawner.hp = 10
 	enemy_spawner.sprite = Polygon.new(x, y, N, radius)
 
 	enemy_spawner.global_index = add_object(global_obj_array, global_obj_pointer, enemy_spawner)
@@ -27,7 +27,7 @@ end
 
 function Enemy_spawner:move()
 	if self.counter % 360 == 0 then
-		Enemy.new(self.x, self.y, 3, 2, 16, 2)
+		Warrior.new(self.x, self.y, 3, 2, 16, self.color, 2)
 	end
 
 	self.sprite:move(self.x, self.y)
@@ -35,12 +35,11 @@ function Enemy_spawner:move()
 end
 
 function Enemy_spawner:draw()
-	--love.graphics.setColor(self.color)
+	love.graphics.setColor(self.color)
 	self.sprite:draw()
 end
 
 function Enemy_spawner:resolve_collision(collider)
 	self.hp = self.hp - 1
-
 end
 

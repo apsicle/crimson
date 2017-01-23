@@ -1,55 +1,63 @@
 require 'Player_class'
 require 'Bullet_class'
 require 'Polygon_class'
+require 'Warrior_class'
 require 'Enemy_class'
 require 'Enemy_spawner_class'
 require 'Inanimate_class'
+require 'Shard_class'
 require 'scripts'
 
 
 function love.load()
 -- Preloads
+	music_src1 = love.audio.newSource("audio/sundara.ogg")
+	music_src1:play()
 
 
--- this is a comment
+
+-- Setup globals
 	global_width = love.graphics.getWidth()
 	global_height = love.graphics.getHeight()
+	global_palette = { {255,255,255}, {0, 0, 255}, {0, 255, 0}, {255, 255, 0}, {255, 127, 0}, {255, 0 , 0} }
 	global_obj_array = {};
 	global_obj_pointer = 1;
-	player = Player.new()
-	player.global_index = add_object(global_obj_array, global_obj_pointer, player)
+
 	
-	north_wall = Inanimate.new(-10, -10, 0, 0, global_width, 0 , global_width + 10, -10)
-	south_wall = Inanimate.new(-10, global_height + 10, 0, global_height, global_height, global_width, global_width + 10, global_height + 10)
-	west_wall = Inanimate.new(-10, -10, 0, 0, 0, global_height, -10, global_height + 10)
-	east_wall = Inanimate.new(global_width + 10, -10, global_width, 0, global_width, global_height, global_width + 10, global_height + 10)
 
 -- love.window.getWidth doesn't work. So I think the graphics window is different from 'Window'. What exactly is "draw" doing? How does it open a window and
 -- where is the window object stored?
+
+-- Setup room
+	love.graphics.setBackgroundColor(250, 128, 114);
 	
+	player = Player.new()
+	player.global_index = add_object(global_obj_array, global_obj_pointer, player)
+
+
+-- Setup HUD
+	manabar = love.graphics.newImage("sprites/manabar1.png")
+	hearts = love.graphics.newImage("sprites/heart_atlas.png")
+	heart_atlas = love.graphics.newSpriteBatch( hearts, 5 )
+	heart_quads = {}
+	heart_quads[1] = love.graphics.newQuad(2, 0, 40, hearts:getHeight(), hearts:getDimensions())
+	heart_quads[2] = love.graphics.newQuad(42, 0, 40, hearts:getHeight(), hearts:getDimensions())
+	heart_quads[3] = love.graphics.newQuad(80, 0, 40, hearts:getHeight(), hearts:getDimensions())
+
+	heart_atlas:add(heart_quads[1], 0, 0)
+	heart_atlas:add(heart_quads[2], 42, 0)
+	heart_atlas:add(heart_quads[3], 80, 0)
+	setup_hearts()
+
+
+-- This is spawning enemies for testing
+	Enemy_spawner.new(200, 150, 3, 4, 16, 2, global_palette[love.math.random(1, 6)])
+	Enemy_spawner.new(600, 150, 3, 4, 16, 2, global_palette[love.math.random(1, 6)])
+	Enemy_spawner.new(350, 450, 3, 4, 16, 2, global_palette[love.math.random(1, 6)])
 end
 
 function love.update()
-	-- Player controls. I figure I'll just put this on the first layer, ie. in update, so there's the least overhead as possible?
-	-- Movement:
-	if (love.keyboard.isDown('up')) then
-		player.y = player.y - player.speed
-	end
-	if (love.keyboard.isDown('left')) then
-		player.x = player.x - player.speed
-	end
-	if (love.keyboard.isDown('down')) then
-		player.y = player.y + player.speed
-	end
-	if (love.keyboard.isDown('right')) then
-		player.x = player.x + player.speed
-	end
-
-	--Shooting. Create mini versions of yourself with direction and velocity
-	if(love.keyboard.isDown('w')) then
-		player:shoot()
-	end
-
+	
 	--Create an object on mouse press
 
 
@@ -61,15 +69,16 @@ end
 
 function love.draw()
 	draw_objects();
-	player:draw();
+	for i = 1, 4, 1 do			
+		love.graphics.setColor(255,255,255)
+		love.graphics.draw(manabar, global_width - 95 - i * 35, -12, 0, 1, 1)
+	end
+	love.graphics.draw(heart_atlas)
 end
+
+
 
 -- Unique callbacks
-function love.mousepressed(x, y, button, istouch)
-	Enemy_spawner.new(x, y, 3, 4, 16)
-
-end
-
 function draw_objects()
 	for key, value in pairs(global_obj_array) do
 		value:draw()
@@ -87,4 +96,37 @@ function update_objects()
 		value:update()
 	end
 end
+
+function check_collision_objects()
+	for key, value in pairs(global_obj_array) do
+		check_collision(value)
+	end
+end
 	
+--paint gun vs destruction gun.
+--paint mode paints things diff colors
+--destruction gun is your standard gun. destroys things of your same color, can pick up powerups for this.
+
+-- Functions
+function setup_hearts()
+	heart_atlas:clear()
+
+	local hp = player.hp
+	local whole, frac = math.modf(hp);
+	local empty = math.ceil(player.max_hp - hp)
+
+	local xpos = -40;
+	for i = 1, whole, 1 do
+		xpos = xpos + 40
+		heart_atlas:add(heart_quads[1], xpos, 0)
+	end
+	if frac ~= 0 then
+		xpos = xpos + 40
+		heart_atlas:add(heart_quads[2], xpos, 0)
+	end
+
+	for i = 1, empty, 1 do
+		xpos = xpos + 40
+		heart_atlas:add(heart_quads[3], xpos, 0)
+	end
+end
