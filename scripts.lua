@@ -24,6 +24,15 @@ function clamp(min, max, num)
 	return math.max(math.min(num, max), min)
 end
 
+function color_index(color) 
+	for i, value in pairs(global_palette) do
+		print(i, value, color)
+		if color == value then
+			return i
+		end
+	end
+end
+
 function blend_colors(rgb1, rgb2, t)
 	-- sqrt( [1-t]*rgb1^2 + [t]*rgb2^2)
 	rgb3 = {}
@@ -43,9 +52,10 @@ function sq(num)
 	return num * num
 end
 
-function move_constant_speed(x1, y1, x2, y2, speed)
-	local x_dist = x2 - x1
-	local y_dist = y2 - y1
+function move_constant_speed(self, x2, y2, speed)
+	--for when you know only the magnitude to travel, and do not have access to vectorized (x, y) movement.
+	local x_dist = x2 - self.x
+	local y_dist = y2 - self.y
 
 	if sq(x_dist) + sq(y_dist) > 10 then
 
@@ -54,21 +64,25 @@ function move_constant_speed(x1, y1, x2, y2, speed)
 		local a = math.sin(theta) * speed
 		local b = a / k
 
-		return x1 + b, y1 + a;
+		self.x = self.x + b
+		self.y = self.y + a;
 
+		return true;
 	end
 
-	return x1, y1
-
-	
+	return false;
 end
 
-function distance2dsq(x1, y1, x2, y2) 
+function distance_coord_sq(x1, y1, x2, y2) 
 	return sq(x2 - x1) + sq(y2 - y1)
 end
 
 function distance_obj_sq(obj1, obj2)
 	return sq(obj1.x - obj2.x) + sq(obj1.y - obj2.y)
+end
+
+function distance_obj(obj1, obj2)
+	return math.sqrt(sq(obj1.x - obj2.x) + sq(obj1.y - obj2.y))
 end
 
 
@@ -114,7 +128,7 @@ function raycast(self, d, e)
 	local collidable_objs = {}
 	for key, value in pairs(global_obj_array) do
 		if (value.collision_group ~= self.collision_group) then
-			if value.non_collidable ~= nil then
+			if value.is_shard ~= nil then
 			elseif value.color ~= self.color then
 				
 				table.insert(collidable_objs, value)

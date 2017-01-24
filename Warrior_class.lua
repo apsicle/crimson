@@ -1,20 +1,27 @@
 Warrior = {}
 
-function Warrior.new(x, y, N, speed, radius, color, collision_group)
+function Warrior.new(x, y, N, speed, radius, color, damage, collision_group)
 	warrior = {}
 	setmetatable(warrior, {__index = Warrior})
 	warrior.color = color
 	warrior.x = x
 	warrior.y = y
 	warrior.N = N
+	warrior.target_x = 0;
+	warrior.target_y = 0;
 	warrior.speed = speed
 	warrior.radius = radius
 	warrior.counter = 0
+	warrior.damage = damage
 	warrior.collision_group = 2
 	warrior.hp = 1
 	warrior.refresh_speed = 60
-	warrior.sprite = Polygon.new(x, y, N, radius)
+	warrior.state = "moving"
+	warrior.stagger_max = 30;
+	warrior.stagger = 30;
 
+
+	warrior.sprite = Polygon.new(x, y, N, radius)
 	warrior.global_index = add_object(global_obj_array, global_obj_pointer, warrior)
 	return warrior
 end
@@ -34,25 +41,36 @@ function Warrior:destroy()
 end
 
 function Warrior:move()
-	local dist_to_player = distance_obj_sq(self, player)
-	self.x, self.y = move_constant_speed(self.x, self.y, player.x, player.y, self.speed)
-	self.sprite:move(self.x, self.y)
-	if self.counter == 0 then
-		self:shoot()
-		self.counter = self.refresh_speed
+	local dist_to_player = distance_obj(self, player);
+
+	if self.state == "moving" then
+		move_constant_speed(self, player.x, player.y, self.speed)
+		if dist_to_player < self.radius * 4 then
+			self:attack(player)
+		end
+
+	elseif self.state == "attacking" then
+		moved = move_constant_speed(self, self.target_x, self.target_y, self.speed * 2)
+		if moved == false then
+			self.state = "recovering"
+		end
+
+	elseif self.state == "recovering" then
+		self.stagger = self.stagger - 1
+		if self.stagger == 0 then
+			self.stagger = self.stagger_max
+			self.state = "moving"
+		end	
 	end
-	self.counter = self.counter - 1;
+
+	self.sprite:move(self.x, self.y);
+
 end
 
-function Warrior:shoot()
-
-	local angle = math.atan2(player.y - self.y, player.x - self.x);
-	local xdisp = math.cos(angle) * self.radius / 2
-	local ydisp = math.sin(angle) * self.radius / 2
-	Bullet.new(self.x + xdisp, self.y + ydisp, self.N, angle, 10, self.radius / 4, self.color, self.collision_group);
-		
-		
-
+function Warrior:attack(obj)
+	self.state = "attacking"
+	self.target_x = player.x
+	self.target_y = player.y
 end
 
 

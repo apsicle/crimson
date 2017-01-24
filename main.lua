@@ -2,7 +2,7 @@ require 'Player_class'
 require 'Bullet_class'
 require 'Polygon_class'
 require 'Warrior_class'
-require 'Enemy_class'
+require 'Ranger_class'
 require 'Enemy_spawner_class'
 require 'Inanimate_class'
 require 'Shard_class'
@@ -19,7 +19,7 @@ function love.load()
 -- Setup globals
 	global_width = love.graphics.getWidth()
 	global_height = love.graphics.getHeight()
-	global_palette = { {255,255,255}, {0, 0, 255}, {0, 255, 0}, {255, 255, 0}, {255, 127, 0}, {255, 0 , 0} }
+	global_palette = { {255,255,255}, {181,37,9}, {11,180,214}, {64,188,3}, {127,32,176} }
 	global_obj_array = {};
 	global_obj_pointer = 1;
 
@@ -36,24 +36,35 @@ function love.load()
 
 
 -- Setup HUD
-	manabar = love.graphics.newImage("sprites/manabar1.png")
+	
+
+	-- HP BAR
 	hearts = love.graphics.newImage("sprites/heart_atlas.png")
 	heart_atlas = love.graphics.newSpriteBatch( hearts, 5 )
 	heart_quads = {}
 	heart_quads[1] = love.graphics.newQuad(2, 0, 40, hearts:getHeight(), hearts:getDimensions())
 	heart_quads[2] = love.graphics.newQuad(42, 0, 40, hearts:getHeight(), hearts:getDimensions())
 	heart_quads[3] = love.graphics.newQuad(80, 0, 40, hearts:getHeight(), hearts:getDimensions())
-
-	heart_atlas:add(heart_quads[1], 0, 0)
-	heart_atlas:add(heart_quads[2], 42, 0)
-	heart_atlas:add(heart_quads[3], 80, 0)
+	
 	setup_hearts()
 
+	-- MANA BAR
+	manabars = love.graphics.newImage("sprites/manabars_atlas.png")
+	mana = love.graphics.newImage("sprites/mana_atlas.png")
+	mana_atlas = love.graphics.newSpriteBatch( mana, 4 )
+	mana_quads = {}
+	mana_quads[1] = love.graphics.newQuad(0, 0, 40, mana:getHeight(), mana:getDimensions())
+	mana_quads[2] = love.graphics.newQuad(40, 0, 40, mana:getHeight(), mana:getDimensions())
+	mana_quads[3] = love.graphics.newQuad(80, 0, 40, mana:getHeight(), mana:getDimensions())
+	mana_quads[4] = love.graphics.newQuad(120, 0, 40, mana:getHeight(), mana:getDimensions())
+
+	setup_mana()
 
 -- This is spawning enemies for testing
-	Enemy_spawner.new(200, 150, 3, 4, 16, 2, global_palette[love.math.random(1, 6)])
-	Enemy_spawner.new(600, 150, 3, 4, 16, 2, global_palette[love.math.random(1, 6)])
-	Enemy_spawner.new(350, 450, 3, 4, 16, 2, global_palette[love.math.random(1, 6)])
+	Ranger.new(500, 150, 5, 2, 16, global_palette[love.math.random(1, 5)], 1, 3)
+	Enemy_spawner.new(200, 150, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
+	Enemy_spawner.new(600, 150, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
+	Enemy_spawner.new(350, 450, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
 end
 
 function love.update()
@@ -69,10 +80,12 @@ end
 
 function love.draw()
 	draw_objects();
-	for i = 1, 4, 1 do			
-		love.graphics.setColor(255,255,255)
-		love.graphics.draw(manabar, global_width - 95 - i * 35, -12, 0, 1, 1)
-	end
+
+	love.graphics.setColor(255,255,255)
+	--love.graphics.draw(image, x_pos, y_pos, rotation, scalex, scaley, xoffset, yoffset from origin)
+	love.graphics.draw(manabars, global_width - manabars:getWidth() * 0.8, -10, 0, 1, 1)
+	love.graphics.draw(mana_atlas, global_width - manabars:getWidth() * 0.8, -10, 0, 1, 1)
+
 	love.graphics.draw(heart_atlas)
 end
 
@@ -128,5 +141,15 @@ function setup_hearts()
 	for i = 1, empty, 1 do
 		xpos = xpos + 40
 		heart_atlas:add(heart_quads[3], xpos, 0)
+	end
+end
+
+function setup_mana()
+	mana_atlas: clear()
+
+	local mana = player.mp
+
+	for i = 1, 4, 1 do
+		mana_atlas:add(mana_quads[i], (i-1) * 40, (134 - mana[i]), 0, 1, mana[i])
 	end
 end

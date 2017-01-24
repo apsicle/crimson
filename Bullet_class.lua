@@ -1,6 +1,6 @@
 Bullet = {}
 
-function Bullet.new(x, y, N, direction, speed, radius, color, collision_group)
+function Bullet.new(x, y, N, direction, speed, radius, color, damage, collision_group)
 	bullet = {}
 	setmetatable(bullet, {__index = Bullet})
 	bullet.x = x; bullet.y = y; 
@@ -10,6 +10,7 @@ function Bullet.new(x, y, N, direction, speed, radius, color, collision_group)
 	bullet.speed = speed;
 	bullet.radius = radius;
 	bullet.collision_group = collision_group;
+	bullet.damage = damage
 	bullet.sprite = Polygon.new(x, y, N, radius)
 	bullet.hp = 1
 	bullet.global_index = add_object(global_obj_array, global_obj_pointer, bullet)
