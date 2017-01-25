@@ -33,9 +33,10 @@ function Player.new (x, y, N, collision_group)
 	player.max_mp = 100
 	-- red, blue, green, purple
 
-
+	-- Sprite
+	player.hat = love.graphics.newImage("sprites/my_hat.png")
 	player.sprite = Polygon.new(player.x, player.y, player.N, player.radius)
-
+	
 	--define the color palette for the player. Player character can switch between these freely.
 	player.palette = global_palette
 
@@ -144,6 +145,8 @@ end
 function Player:draw() 
 	love.graphics.setColor(self.color)
 	self.sprite:draw()
+	love.graphics.setColor(11,180,214)
+	love.graphics.draw(self.hat, self.x-self.radius, self.y-self.radius*2)
 end
 
 function Player:check_collisions()
@@ -154,6 +157,9 @@ function Player:check_collisions()
 			if (value.collision_group ~= self.collision_group) then
 				if value.item ~= nil then
 					--player object is the only object that can collide with items
+					table.insert(collidable_objs, value)
+				elseif value.is_shard ~= nil then
+					--player object collides with shards no matter what
 					table.insert(collidable_objs, value)
 				elseif value.color ~= self.color then
 					--if you are different colors, you can collide

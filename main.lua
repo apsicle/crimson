@@ -1,3 +1,5 @@
+require 'anim8'
+
 require 'Player_class'
 require 'Bullet_class'
 require 'Polygon_class'
@@ -8,9 +10,10 @@ require 'Inanimate_class'
 require 'Shard_class'
 require 'scripts'
 
-
+--love.graphics.draw( drawable, x, y, r, sx, sy, ox, oy, kx, ky )
 function love.load()
 -- Preloads
+	love.window.setMode(1024, 768)
 	music_src1 = love.audio.newSource("audio/sundara.ogg")
 	music_src1:play()
 
@@ -29,7 +32,9 @@ function love.load()
 -- where is the window object stored?
 
 -- Setup room
-	love.graphics.setBackgroundColor(250, 128, 114);
+	--love.graphics.setBackgroundColor(250, 128, 114);
+
+	--love.graphics.setBackgroundColor(0, 0, 0);
 	
 	player = Player.new()
 	player.global_index = add_object(global_obj_array, global_obj_pointer, player)
@@ -60,6 +65,62 @@ function love.load()
 
 	setup_mana()
 
+	-- TERRAIN
+	full_terrain = love.graphics.newImage("sprites/terrain_atlas.png")
+	atlas_size = 1024
+	tile_size = 32
+
+    terrain_atlas = love.graphics.newSpriteBatch( full_terrain, atlas_size )
+    cave_quads = {}
+
+    --18, 6 is start of cave. Goes 3 across, 6 down. (ie. ends at 20, 11)
+
+    -- Laid on top, rocks
+	cave_quads[1] = love.graphics.newQuad(18 * tile_size, 6 * tile_size, tile_size,  tile_size,
+    full_terrain:getDimensions())
+    cave_quads[2] = love.graphics.newQuad(18 * tile_size, 7 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    
+    -- Center piece: hole, 2x2
+    cave_quads[3] = love.graphics.newQuad(19 * tile_size, 6 * tile_size, 2 * tile_size, 2 * tile_size,
+    full_terrain:getDimensions())
+    
+    -- Top wall, left corner to middle wall to right wall
+    cave_quads[4] = love.graphics.newQuad(18 * tile_size, 8 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    cave_quads[5] = love.graphics.newQuad(19 * tile_size, 8 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    cave_quads[6] = love.graphics.newQuad(20 * tile_size, 8 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+
+    -- Left wall middle piece
+    cave_quads[7] = love.graphics.newQuad(18 * tile_size, 9 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+
+    -- Right wall middle piece
+    cave_quads[8] = love.graphics.newQuad(20 * tile_size, 9 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+
+    -- Bottom wall, left corner to middle wall to right wall
+    cave_quads[9] = love.graphics.newQuad(18 * tile_size, 10 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    cave_quads[10] = love.graphics.newQuad(19 * tile_size, 10 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    cave_quads[11] = love.graphics.newQuad(20 * tile_size, 10 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+
+    -- Center pieces, arbitrary. [12] has decoration (cracks)
+    cave_quads[12] = love.graphics.newQuad(18 * tile_size, 11 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    cave_quads[13] = love.graphics.newQuad(19 * tile_size, 11 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    cave_quads[14] = love.graphics.newQuad(20 * tile_size, 11 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    cave_quads[15] = love.graphics.newQuad(19 * tile_size, 9 * tile_size, tile_size, tile_size, 
+    full_terrain:getDimensions())
+
+	setup_terrain()
+
 -- This is spawning enemies for testing
 	Ranger.new(500, 150, 5, 2, 16, global_palette[love.math.random(1, 5)], 1, 3)
 	Enemy_spawner.new(200, 150, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
@@ -79,14 +140,19 @@ function love.update()
 end
 
 function love.draw()
+
+	love.graphics.setColor(255,255,255)
+	love.graphics.draw(terrain_atlas)
+
 	draw_objects();
 
 	love.graphics.setColor(255,255,255)
 	--love.graphics.draw(image, x_pos, y_pos, rotation, scalex, scaley, xoffset, yoffset from origin)
+	
 	love.graphics.draw(manabars, global_width - manabars:getWidth() * 0.8, -10, 0, 1, 1)
 	love.graphics.draw(mana_atlas, global_width - manabars:getWidth() * 0.8, -10, 0, 1, 1)
-
 	love.graphics.draw(heart_atlas)
+
 end
 
 
@@ -145,7 +211,7 @@ function setup_hearts()
 end
 
 function setup_mana()
-	mana_atlas: clear()
+	mana_atlas:clear()
 
 	local mana = player.mp
 
@@ -153,3 +219,63 @@ function setup_mana()
 		mana_atlas:add(mana_quads[i], (i-1) * 40, (134 - mana[i]), 0, 1, mana[i])
 	end
 end
+
+function setup_terrain()
+	terrain_atlas:clear()
+
+	local max_y = global_height / tile_size
+	local max_x = global_width / tile_size
+
+	for j = 1, max_y, 1 do 
+		for i = 1, max_x, 1 do
+			if j == 1 then
+				--top row
+				if i == 1 then
+					--top left corner
+					terrain_atlas:add(cave_quads[4], (i-1) * tile_size, (j-1) * tile_size)
+				elseif i ~= max_x then
+					--middle of row
+					terrain_atlas:add(cave_quads[5], (i-1) * tile_size, (j-1) * tile_size)
+				else
+					--top right corner
+					terrain_atlas:add(cave_quads[6], (i-1) * tile_size, (j-1) * tile_size)
+				end
+
+			elseif j ~= max_y then
+				--middle rows
+				if i == 1 then
+					--left middle walls
+					terrain_atlas:add(cave_quads[7], (i-1) * tile_size, (j-1) * tile_size)
+				elseif i ~= max_x then
+					
+						--middle rows, middle elements (randomize!)
+						local arr = {{12, 0.04}, {13, 0.32}, {14, 0.32}, {15, 0.32}}
+						local randint = sample(arr)
+						terrain_atlas:add(cave_quads[randint], (i-1) * tile_size, (j-1) * tile_size)
+
+				else
+					--right middle walls
+					terrain_atlas:add(cave_quads[8], (i-1) * tile_size, (j-1) * tile_size)
+				end
+
+			else
+				--bottom row
+				if i == 1 then
+					--top left corner
+					terrain_atlas:add(cave_quads[9], (i-1) * tile_size, (j-1) * tile_size)
+
+				elseif i ~= max_x then
+					--middle of row
+					terrain_atlas:add(cave_quads[10], (i-1) * tile_size, (j-1) * tile_size)
+				else
+					--top right corner
+					terrain_atlas:add(cave_quads[11], (i-1) * tile_size, (j-1) * tile_size)
+				end
+			end
+		end
+	end
+	local x = love.math.random()
+
+end
+
+

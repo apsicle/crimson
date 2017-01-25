@@ -26,7 +26,6 @@ end
 
 function color_index(color) 
 	for i, value in pairs(global_palette) do
-		print(i, value, color)
 		if color == value then
 			return i
 		end
@@ -167,4 +166,15 @@ function raycast(self, d, e)
 	end
 
 	return colliding_obj, min_t
+end
+
+function sample(arr) 
+	sum = 0
+	my_rand = love.math.random()
+	for i, val in pairs(arr) do
+		sum = sum + val[2]
+		if my_rand <= sum then
+			return val[1]
+		end
+	end
 end
