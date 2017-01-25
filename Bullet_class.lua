@@ -3,7 +3,7 @@ Bullet = {}
 function Bullet.new(x, y, N, direction, speed, radius, color, damage, collision_group)
 	bullet = {}
 	setmetatable(bullet, {__index = Bullet})
-	bullet.x = x; bullet.y = y; 
+	bullet.x = x; bullet.y = y;
 	bullet.N = N
 	bullet.color = color
 	bullet.direction = direction; 

@@ -1,6 +1,8 @@
 require 'anim8'
 
+require 'Status_table_class'
 require 'Player_class'
+require 'Shockwave_class'
 require 'Bullet_class'
 require 'Polygon_class'
 require 'Warrior_class'
@@ -71,9 +73,11 @@ function love.load()
 	tile_size = 32
 
     terrain_atlas = love.graphics.newSpriteBatch( full_terrain, atlas_size )
-    cave_quads = {}
+   
 
+    --(1) CAVES--
     --18, 6 is start of cave. Goes 3 across, 6 down. (ie. ends at 20, 11)
+    cave_quads = {}
 
     -- Laid on top, rocks
 	cave_quads[1] = love.graphics.newQuad(18 * tile_size, 6 * tile_size, tile_size,  tile_size,
@@ -119,7 +123,72 @@ function love.load()
     cave_quads[15] = love.graphics.newQuad(19 * tile_size, 9 * tile_size, tile_size, tile_size, 
     full_terrain:getDimensions())
 
-	setup_terrain()
+    cave_center_arr = {{12, 0.04}, {13, 0.32}, {14, 0.32}, {15, 0.32}}
+
+	--setup_terrain()
+
+	--(2) GRASS--
+	grass_quads = {}
+
+    -- Laid on top, rocks
+	grass_quads[1] = love.graphics.newQuad(21 * tile_size, 6 * tile_size, tile_size,  tile_size,
+    full_terrain:getDimensions())
+    grass_quads[2] = love.graphics.newQuad(21 * tile_size, 7 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    
+    -- Center piece: hole, 2x2
+    grass_quads[3] = love.graphics.newQuad(22 * tile_size, 6 * tile_size, 2 * tile_size, 2 * tile_size,
+    full_terrain:getDimensions())
+    
+    -- Top wall, left corner to middle wall to right wall
+    grass_quads[4] = love.graphics.newQuad(21 * tile_size, 8 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    grass_quads[5] = love.graphics.newQuad(22 * tile_size, 8 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    grass_quads[6] = love.graphics.newQuad(23 * tile_size, 8 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+
+    -- Left wall middle piece
+    grass_quads[7] = love.graphics.newQuad(21 * tile_size, 9 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+
+    -- Right wall middle piece
+    grass_quads[8] = love.graphics.newQuad(23 * tile_size, 9 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+
+    -- Bottom wall, left corner to middle wall to right wall
+    grass_quads[9] = love.graphics.newQuad(21 * tile_size, 10 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    grass_quads[10] = love.graphics.newQuad(22 * tile_size, 10 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    grass_quads[11] = love.graphics.newQuad(23 * tile_size, 10 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+
+    -- Center pieces, arbitrary. [12] has decoration (cracks)
+    grass_quads[12] = love.graphics.newQuad(21 * tile_size, 11 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    grass_quads[13] = love.graphics.newQuad(22 * tile_size, 11 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    grass_quads[14] = love.graphics.newQuad(23 * tile_size, 11 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    grass_quads[15] = love.graphics.newQuad(22 * tile_size, 9 * tile_size, tile_size, tile_size, 
+    full_terrain:getDimensions())
+
+    -- Decorative pieces.
+    grass_quads[16] = love.graphics.newQuad(2 * tile_size, 25 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    grass_quads[17] = love.graphics.newQuad(21 * tile_size, 5 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+    grass_quads[18] = love.graphics.newQuad(22 * tile_size, 5 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+ 	grass_quads[19] = love.graphics.newQuad(23 * tile_size, 5 * tile_size, tile_size, tile_size,
+    full_terrain:getDimensions())
+
+
+    grass_center_arr = {{12, 0.04}, {13, 0.04}, {14, 0.04}, {15, 0.22}, {16, 0.09}, {17, 0.19}, {18, 0.19}, {19, 0.19}}
+	setup_terrain(grass_quads, grass_center_arr)
+
+
 
 -- This is spawning enemies for testing
 	Ranger.new(500, 150, 5, 2, 16, global_palette[love.math.random(1, 5)], 1, 3)
@@ -220,7 +289,7 @@ function setup_mana()
 	end
 end
 
-function setup_terrain()
+function setup_terrain(terrain_quads, center_arr)
 	terrain_atlas:clear()
 
 	local max_y = global_height / tile_size
@@ -232,44 +301,44 @@ function setup_terrain()
 				--top row
 				if i == 1 then
 					--top left corner
-					terrain_atlas:add(cave_quads[4], (i-1) * tile_size, (j-1) * tile_size)
+					terrain_atlas:add(terrain_quads[4], (i-1) * tile_size, (j-1) * tile_size)
 				elseif i ~= max_x then
 					--middle of row
-					terrain_atlas:add(cave_quads[5], (i-1) * tile_size, (j-1) * tile_size)
+					terrain_atlas:add(terrain_quads[5], (i-1) * tile_size, (j-1) * tile_size)
 				else
 					--top right corner
-					terrain_atlas:add(cave_quads[6], (i-1) * tile_size, (j-1) * tile_size)
+					terrain_atlas:add(terrain_quads[6], (i-1) * tile_size, (j-1) * tile_size)
 				end
 
 			elseif j ~= max_y then
 				--middle rows
 				if i == 1 then
 					--left middle walls
-					terrain_atlas:add(cave_quads[7], (i-1) * tile_size, (j-1) * tile_size)
+					terrain_atlas:add(terrain_quads[7], (i-1) * tile_size, (j-1) * tile_size)
 				elseif i ~= max_x then
 					
 						--middle rows, middle elements (randomize!)
-						local arr = {{12, 0.04}, {13, 0.32}, {14, 0.32}, {15, 0.32}}
-						local randint = sample(arr)
-						terrain_atlas:add(cave_quads[randint], (i-1) * tile_size, (j-1) * tile_size)
+						
+						local randint = sample(center_arr)
+						terrain_atlas:add(terrain_quads[randint], (i-1) * tile_size, (j-1) * tile_size)
 
 				else
 					--right middle walls
-					terrain_atlas:add(cave_quads[8], (i-1) * tile_size, (j-1) * tile_size)
+					terrain_atlas:add(terrain_quads[8], (i-1) * tile_size, (j-1) * tile_size)
 				end
 
 			else
 				--bottom row
 				if i == 1 then
 					--top left corner
-					terrain_atlas:add(cave_quads[9], (i-1) * tile_size, (j-1) * tile_size)
+					terrain_atlas:add(terrain_quads[9], (i-1) * tile_size, (j-1) * tile_size)
 
 				elseif i ~= max_x then
 					--middle of row
-					terrain_atlas:add(cave_quads[10], (i-1) * tile_size, (j-1) * tile_size)
+					terrain_atlas:add(terrain_quads[10], (i-1) * tile_size, (j-1) * tile_size)
 				else
 					--top right corner
-					terrain_atlas:add(cave_quads[11], (i-1) * tile_size, (j-1) * tile_size)
+					terrain_atlas:add(terrain_quads[11], (i-1) * tile_size, (j-1) * tile_size)
 				end
 			end
 		end

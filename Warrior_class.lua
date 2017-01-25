@@ -43,7 +43,7 @@ end
 function Loopy_ghost:destroy()
 	local num_shards = love.math.random(3,5);
 	for i = 1, num_shards, 1 do
-		Shard.new(self, self.x, self.y, self.x + love.math.random(-10,10), self.y + love.math.random(-10,10), 5)
+		Shard.new(self, self.x, self.y, self.x + love.math.random(-20,20), self.y + love.math.random(-20,20), 5)
 	end
 	global_obj_array[self.global_index] = nil
 end
@@ -88,10 +88,10 @@ function Loopy_ghost:draw()
 	love.graphics.setColor(self.color)
 	if self.state == "moving" or self.state == "recovering" then
 		self.animation_moving:update(1)
-		self.animation_moving:draw(self.sprite_moving, self.x, self.y, (math.pi/180) * sign(player.x - self.x) * 10, 1, 1)
+		self.animation_moving:draw(self.sprite_moving, self.x, self.y - 20, (math.pi/180) * sign(player.x - self.x) * 10, 1, 1)
 	else
 		self.animation_attacking:update(1)
-		self.animation_attacking:draw(self.sprite_attacking, self.x, self.y, (math.pi/180) * sign(player.x - self.x) * 10, 1, 1)
+		self.animation_attacking:draw(self.sprite_attacking, self.x, self.y - 20, (math.pi/180) * sign(player.x - self.x) * 10, 1, 1)
 	end
 end
 
