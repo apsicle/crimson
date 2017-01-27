@@ -13,8 +13,10 @@ function Shard.new(obj, spawn_x, spawn_y, final_x, final_y, speed)
 	shard.collision_group = 0;
 	shard.is_shard = true;
 	shard.radius = 3;
+
 	shard.final_x = final_x
 	shard.final_y = final_y
+	shard.z_index = 3;
 	shard.sprite = love.graphics.newImage('sprites/shard.png')
 	--Polygon.new(spawn_x, spawn_y, obj.N, shard.radius);
 

@@ -2,7 +2,7 @@ require 'anim8'
 
 require 'Status_table_class'
 require 'Player_class'
-require 'Shockwave_class'
+require 'Spells_class'
 require 'Bullet_class'
 require 'Polygon_class'
 require 'Warrior_class'
@@ -27,6 +27,7 @@ function love.load()
 	global_palette = { {255,255,255}, {181,37,9}, {11,180,214}, {64,188,3}, {127,32,176} }
 	global_obj_array = {};
 	global_obj_pointer = 1;
+	global_animations = {}
 
 	
 
@@ -123,9 +124,10 @@ function love.load()
     cave_quads[15] = love.graphics.newQuad(19 * tile_size, 9 * tile_size, tile_size, tile_size, 
     full_terrain:getDimensions())
 
-    cave_center_arr = {{12, 0.04}, {13, 0.32}, {14, 0.32}, {15, 0.32}}
+    cave_center_arr = {{12, 0.02}, {13, 0.34}, {14, 0.32}, {15, 0.32}}
 
-	--setup_terrain()
+	setup_terrain(cave_quads, cave_center_arr)
+
 
 	--(2) GRASS--
 	grass_quads = {}
@@ -186,7 +188,7 @@ function love.load()
 
 
     grass_center_arr = {{12, 0.04}, {13, 0.04}, {14, 0.04}, {15, 0.22}, {16, 0.09}, {17, 0.19}, {18, 0.19}, {19, 0.19}}
-	setup_terrain(grass_quads, grass_center_arr)
+	--setup_terrain(grass_quads, grass_center_arr)
 
 
 
@@ -210,9 +212,11 @@ end
 
 function love.draw()
 
+	
+
 	love.graphics.setColor(255,255,255)
 	love.graphics.draw(terrain_atlas)
-
+	
 	draw_objects();
 
 	love.graphics.setColor(255,255,255)
@@ -228,8 +232,12 @@ end
 
 -- Unique callbacks
 function draw_objects()
-	for key, value in pairs(global_obj_array) do
-		value:draw()
+	for i = 1, 3, 1 do
+		for key, value in pairs(global_obj_array) do
+			if value.z_index == i then
+				value:draw()
+			end
+		end
 	end
 end
 

@@ -11,8 +11,10 @@ function Enemy_spawner.new(x, y, N, speed, radius, color, collision_group)
 	enemy_spawner.radius = radius
 	enemy_spawner.counter = 0
 	enemy_spawner.damage = 0.5
+	enemy_spawner.status = Status_table.new(enemy_spawner)
 	enemy_spawner.collision_group = collision_group
 	enemy_spawner.hp = 10
+	enemy_spawner.z_index = 3
 	enemy_spawner.sprite = Polygon.new(x, y, N, radius)
 
 	enemy_spawner.global_index = add_object(global_obj_array, global_obj_pointer, enemy_spawner)

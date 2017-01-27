@@ -10,6 +10,7 @@ function Loopy_ghost.new(x, y, N, speed, radius, color, damage, collision_group)
 	loopy_ghost.target_x = 0;
 	loopy_ghost.target_y = 0;
 	loopy_ghost.speed = speed
+	loopy_ghost.status = Status_table.new(loopy_ghost)
 	loopy_ghost.radius = 32
 	loopy_ghost.counter = 0
 	loopy_ghost.damage = damage
@@ -21,6 +22,8 @@ function Loopy_ghost.new(x, y, N, speed, radius, color, damage, collision_group)
 	loopy_ghost.stagger = 30;
 
 	-- SPRITES, ANIMATIONS
+
+	loopy_ghost.z_index = 3;
 	loopy_ghost.sprite_moving = love.graphics.newImage('sprites/loopy_ghost_atlas.png')
   	local g = anim8.newGrid(64, 64, loopy_ghost.sprite_moving:getWidth(), loopy_ghost.sprite_moving:getHeight())
   	loopy_ghost.animation_moving = anim8.newAnimation(g('1-3',1), 15)
@@ -96,7 +99,7 @@ function Loopy_ghost:draw()
 end
 
 function Loopy_ghost:resolve_collision(collider)
-	if collider.color ~= global_palette[1] then
+	if collider.color ~= global_palette[1] and collider.color ~= nil then
 		self.color = collider.color
 	else
 		self.hp = self.hp - 1

@@ -8,11 +8,13 @@ function Bullet.new(x, y, N, direction, speed, radius, color, damage, collision_
 	bullet.color = color
 	bullet.direction = direction; 
 	bullet.speed = speed;
+	bullet.status = Status_table.new(bullet)
 	bullet.radius = radius;
 	bullet.collision_group = collision_group;
 	bullet.damage = damage
 	bullet.sprite = Polygon.new(x, y, N, radius)
 	bullet.hp = 1
+	bullet.z_index = 2;
 	bullet.global_index = add_object(global_obj_array, global_obj_pointer, bullet)
 	return bullet
 end

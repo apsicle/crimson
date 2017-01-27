@@ -12,6 +12,7 @@ function add_object(array, pointer, object)
 	return pointer
 end
 
+
 function collide(obj_a, obj_b)
 	obj_a:resolve_collision(obj_b)
 	obj_b:resolve_collision(obj_a)
@@ -127,10 +128,24 @@ function raycast(self, d, e)
 	local collidable_objs = {}
 	for key, value in pairs(global_obj_array) do
 		if (value.collision_group ~= self.collision_group) then
+			-- if any of these except 'else', don't even try to collide
+
+
 			if value.is_shard ~= nil then
-			elseif value.color ~= self.color then
-				
-				table.insert(collidable_objs, value)
+
+
+			elseif value.status ~= nil then
+				if value.status:check_status("jaunted") then
+				end
+
+			--elseif value.inanimate ~= nil then
+
+
+			else
+				--you may be able to collide, but check here.
+				if value.color ~= self.color then
+					table.insert(collidable_objs, value)
+				end
 			end
 		end
 	end
@@ -168,6 +183,9 @@ function raycast(self, d, e)
 	return colliding_obj, min_t
 end
 
+
+
+
 function sample(arr) 
 	sum = 0
 	my_rand = love.math.random()
@@ -176,5 +194,11 @@ function sample(arr)
 		if my_rand <= sum then
 			return val[1]
 		end
+	end
+end
+
+function print_table(table)
+	for i, v in pairs(table) do
+		print(i, v)
 	end
 end

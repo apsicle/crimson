@@ -19,12 +19,9 @@ function Player.new (x, y, N, collision_group)
 	player.speed = 4;
 	player.damage = 1;
 	player.angle = 0;
-	player.state = {}
-	player.state['normal'] = true
-	player.invincibility_counter = 60
-	player.invincibility_max = 60
-	player.airborne_counter = 180
-	player.airborne_max = 180
+	player.status = Status_table.new(player)
+	player.z_index = 2;
+
 	player.collision_group = 1
 	player.bullet_refresh_speed = 15;
 	player.bullet_counter = 0
@@ -32,13 +29,14 @@ function Player.new (x, y, N, collision_group)
 	-- HUD status
 	player.hp = 5
 	player.max_hp = 5
-	player.mp = {11, 0, 0, 0}
+	player.mp = {11, 11, 0, 0}
 	player.max_mp = 100
 	-- red, blue, green, purple
 
 	-- Sprite
 	player.hat = love.graphics.newImage("sprites/my_hat.png")
 	player.sprite = Polygon.new(player.x, player.y, player.N, player.radius)
+	player.spell_animation = nil
 
 	--define the color palette for the player. Player character can switch between these freely.
 	player.palette = global_palette
@@ -52,7 +50,7 @@ end
 
 
 function Player:shoot()
-	if player.bullet_counter == 0 then
+	if 1==1 then
 		local angle = math.atan2(love.mouse.getY() - self.y, love.mouse.getX() - self.x);
 		local xdisp = math.cos(angle) * self.radius / 2
 		local ydisp = math.sin(angle) * self.radius / 2
@@ -63,17 +61,9 @@ function Player:shoot()
 end
 
 function Player:update()
-	if self.bullet_counter ~= 0 then
-		self.bullet_counter = self.bullet_counter - 1
-	end
+	self.status:update()
+	--print_table(self.status:get_status('invincible'))
 
-	if self.state == "invincible" then
-		self.invincibility_counter = self.invincibility_counter - 1;
-		if self.invincibility_counter <= 0 then
-			self.state = "normal"
-			self.invincibility_counter = self.invincibility_max
-		end
-	end
 
 	if self.hp <= 0 then
 		global_obj_array[self.global_index] = nil
@@ -84,23 +74,18 @@ end
 function Player:move()
 	-- Player controls. I figure I'll just put this on the first layer, ie. in update, so there's the least overhead as possible?
 	-- Movement:
-    if (self.state['airborne'] == true) then
-    	if (self.airborne_counter == 0) then
-    		self.state['normal'] = true
-    		self.state['airborne'] = false
-    		self.state['invincible'] = false
-    		shockwave = Shockwave.new(self.x, self.y)
-    		self.airborne_counter = self.airborne_max
-    	else
+    if (self.status:check_status('airborne')) then
+    	
+
     		--self.y = self.y + .1*(.5*self.airborne_max - self.airborne_counter)
     		--self.y = self.y - .001*(self.airborne_counter)*(self.airborne_counter - self.airborne_max) + (-0.25*0.001*sq(self.airborne_max))
-    		self.sprite.y = self.sprite.y - .025 *(2*self.airborne_counter - self.airborne_max)
+
+    	local airborne_status = player.status:get_status('airborne')
+    	self.sprite.y = self.sprite.y - .025 *(2*airborne_status['timer'] - airborne_status['timer_max'])
     		--self.y = self.y - .025 *(2*self.airborne_counter - self.airborne_max)
-    		self.airborne_counter = self.airborne_counter - 1
-    		self.state['invincible'] = true
-    	end
+    	
     	self.sprite:move(self.sprite.x, self.sprite.y)
-    	print(self.sprite.y)
+
 
     else
 
@@ -123,6 +108,8 @@ function Player:move()
 			player.angle = player.angle + 2*math.pi/180;
 		end 
 		if (love.keyboard.isDown('q')) then
+			
+
 			player.angle = player.angle - 2*math.pi/180;
 		end 
 
@@ -169,7 +156,17 @@ function Player:move()
 		--Spells
 		if (love.keyboard.isDown('r')) then
 			if self.mp[1] > 10 then
-				self.state['airborne'] = true
+				self.status:activate_status('airborne', 180, 
+					function(self) 
+						--Spells:shockwave(self, self.x, self.y) 
+						self.status:activate_status('invincible', 60) end)
+				self.status:activate_status('jaunted', 180)
+			end
+		end
+
+		if (love.keyboard.isDown('f')) then
+			if self.mp[2] > 10 then
+				Spells:cast_freezing_field(self, self.x, self.y)
 			end
 		end
 
@@ -185,6 +182,8 @@ function Player:move()
 end
 
 function Player:draw() 
+	
+	
 	love.graphics.setColor(self.color)
 	self.sprite:draw()
 	love.graphics.setColor(11,180,214)
@@ -231,10 +230,10 @@ function Player:resolve_collision(collider)
 
 	elseif collider.is_item ~= nil then
 		--self:pick_up(collider)
-	elseif player.state['invincible'] ~= true then
+	elseif self.status:check_status('invincible') ~= true then
 		self.hp = self.hp - collider.damage
 		setup_hearts();
-		player.state['invincible'] = true
+		self.status:activate_status('invincible', 60, function() print("finished") end)
 	end
-	
 end
+

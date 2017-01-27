@@ -16,9 +16,11 @@ function Ranger.new(x, y, N, speed, radius, color, damage, collision_group)
 	ranger.damage = damage
 	ranger.collision_group = collision_group
 	ranger.hp = 3
+	ranger.status = Status_table.new(ranger)
 	ranger.state = "moving"
 	ranger.stagger_max = 60
 	ranger.stagger = 60
+	ranger.z_index = 3
 	ranger.sprite = Polygon.new(x, y, N, radius)
 
 	ranger.global_index = add_object(global_obj_array, global_obj_pointer, ranger)
@@ -91,7 +93,7 @@ function Ranger:draw()
 end
 
 function Ranger:resolve_collision(collider)
-	if collider.color ~= global_palette[1] then
+	if collider.color ~= global_palette[1] and collider.color ~= nil then
 		self.color = collider.color
 	else
 		self.hp = self.hp - 1
