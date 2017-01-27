@@ -61,7 +61,7 @@ function Loopy_ghost:move()
 		end
 
 	elseif self.state == "attacking" then
-		moved = move_constant_speed(self, self.target_x, self.target_y, self.speed * 2)
+		moved = move_constant_speed(self, self.target_x, self.target_y, self.speed * 4)
 		if moved == false then
 			self.state = "recovering"
 		end
@@ -102,7 +102,7 @@ function Loopy_ghost:resolve_collision(collider)
 	if collider.color ~= global_palette[1] and collider.color ~= nil then
 		self.color = collider.color
 	else
-		self.hp = self.hp - 1
+		self.hp = self.hp - collider.damage
 	end
 end
 

@@ -30,7 +30,7 @@ end
 
 function Enemy_spawner:move()
 	if self.counter % 360 == 0 then
-		Loopy_ghost.new(self.x, self.y, 3, 2, 16, self.color, 0.5, 2)
+		Loopy_ghost.new(self.x, self.y, 2, 1, 16, self.color, 0.5, 2)
 	end
 
 	self.sprite:move(self.x, self.y)

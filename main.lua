@@ -6,6 +6,7 @@ require 'scripts'
 require 'Game_object_base_class'
 require 'Ground_enemy_base_class'
 require 'Status_table_class'
+require 'Spell_table_class'
 
 -- Derived classes / Independents
 require 'Player_class'
@@ -198,7 +199,7 @@ function love.load()
 
 
 -- This is spawning enemies for testing
-	Ranger.new(500, 150, 5, 2, 16, global_palette[love.math.random(1, 5)], 1, 3)
+	Ranger(500, 150, 5, 2, 16, global_palette[love.math.random(1, 5)], 1, 3)
 	Enemy_spawner.new(200, 150, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
 	Enemy_spawner.new(600, 150, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
 	Enemy_spawner.new(350, 450, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
@@ -210,7 +211,7 @@ function love.update()
 
 
 	-- Update moving objects
-	print('updating')
+	
 	update_objects();
 	move_objects();
 

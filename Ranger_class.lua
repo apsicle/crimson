@@ -1,6 +1,5 @@
-Ranger = {}
-
-function Ranger.new(x, y, N, speed, radius, color, damage, collision_group)
+Ranger = Class(Ground_enemy_base)
+function Ranger:_init(x, y, N, speed, radius, color, damage, collision_group)
 	ranger = {}
 	setmetatable(ranger, {__index = Ranger})
 	ranger.color = color

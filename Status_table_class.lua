@@ -72,7 +72,7 @@ function Status_table:activate_status(...)
 	setmetatable(t,{__index={timer_max = self[t[1]]['timer_max'], callback = function() print('kappa') return end}})
 
 	local status, timer_max, callback =
-		t[1] or t['frostbitten'], -- default check frostbitten
+		t[1] or 'frostbitten', -- default check frostbitten
 		t[2] or t['timer_max'],
 		t[3] or t['callback']
 

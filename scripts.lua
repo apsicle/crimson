@@ -33,6 +33,31 @@ function check_collision(object)
 	end
 end
 
+function circle_cast(self)
+	local collidable_objs = {}
+
+	if self ~= player then
+
+		for key, value in pairs(global_obj_array) do
+			if value ~= nil then
+				if (value.collision_group ~= self.collision_group) then
+					if value.non_collidable ~= nil then
+					elseif value.color ~= self.color then
+						--if you are different colors, you can collide
+						table.insert(collidable_objs, value)
+					end
+				end
+			end
+		end
+		for key, value in pairs(collidable_objs, value) do
+			if radcheck(self, value) then
+				collide(self, value)
+			end
+		end
+
+	end
+end
+
 function clamp(min, max, num)
 	return math.max(math.min(num, max), min)
 end

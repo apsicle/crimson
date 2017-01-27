@@ -17,9 +17,10 @@ function Player.new (x, y, N, collision_group)
 	player.color = global_palette[1]
 	player.radius = 16;
 	player.speed = 4;
-	player.damage = 1;
+	player.damage = 0;
 	player.angle = 0;
 	player.status = Status_table.new(player)
+	player.spells = Spell_table.new(player)
 	player.z_index = 2;
 
 	player.collision_group = 1
@@ -54,7 +55,7 @@ function Player:shoot()
 		local angle = math.atan2(love.mouse.getY() - self.y, love.mouse.getX() - self.x);
 		local xdisp = math.cos(angle) * self.radius / 2
 		local ydisp = math.sin(angle) * self.radius / 2
-		Bullet.new(self.x + xdisp, self.y + ydisp, self.N, angle, 10, self.radius / 4, self.color, self.damage, self.collision_group);
+		Bullet.new(self.x + xdisp, self.y + ydisp, self.N, angle, 10, self.radius / 4, self.color, 1, self.collision_group);
 		
 		self.bullet_counter = self.bullet_refresh_speed
 	end
@@ -72,6 +73,7 @@ function Player:update()
 end
 
 function Player:move()
+
 	-- Player controls. I figure I'll just put this on the first layer, ie. in update, so there's the least overhead as possible?
 	-- Movement:
     if (self.status:check_status('airborne')) then
@@ -165,9 +167,8 @@ function Player:move()
 		end
 
 		if (love.keyboard.isDown('f')) then
-			if self.mp[2] > 10 then
-				Freezing_field(self.x, self.y)
-			end
+			self.spells:cast(Freezing_field)
+			
 		end
 
 		--Checking collisions

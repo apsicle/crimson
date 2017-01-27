@@ -26,5 +26,4 @@ Ground_enemy_base = Class(Game_object_base)
 
 function Ground_enemy_base:_init(x, y)
 	Game_object_base._init(self, x, y, true)
-	self.global_index = add_object(global_obj_array, global_obj_pointer, self)
 end
