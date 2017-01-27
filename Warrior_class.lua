@@ -89,7 +89,7 @@ function Loopy_ghost:draw()
 	--love.graphics.setColor(self.color)
 	--self.sprite:draw()
 	love.graphics.setColor(self.color)
-	if self.state == "moving" or self.state == "recovering" then
+	if self.state == "moving"  then
 		self.animation_moving:update(1)
 		self.animation_moving:draw(self.sprite_moving, self.x, self.y - 20, (math.pi/180) * sign(player.x - self.x) * 10, 1, 1)
 	else

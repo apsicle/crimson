@@ -16,8 +16,6 @@ function Status_table.new(obj)
 	status_table:add_status("burned", 60)
 	status_table:add_status("jaunted", 180)
 	status_table:add_status("reloading", 30)
-
-	print(status_table.parent.timer_max == player)
 	--print(status_table:get_parent())
 	--print("arg1: ", arg[1], " arg2: ", arg[2])
 	--[[for ind, value in pairs(arg) do

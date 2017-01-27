@@ -166,7 +166,7 @@ function Player:move()
 
 		if (love.keyboard.isDown('f')) then
 			if self.mp[2] > 10 then
-				Spells:cast_freezing_field(self, self.x, self.y)
+				Freezing_field(self.x, self.y)
 			end
 		end
 

@@ -1,6 +1,13 @@
+-- Might be needed first
 require 'anim8'
+require 'scripts'
 
+-- Parent classes
+require 'Game_object_base_class'
+require 'Ground_enemy_base_class'
 require 'Status_table_class'
+
+-- Derived classes / Independents
 require 'Player_class'
 require 'Spells_class'
 require 'Bullet_class'
@@ -10,7 +17,7 @@ require 'Ranger_class'
 require 'Enemy_spawner_class'
 require 'Inanimate_class'
 require 'Shard_class'
-require 'scripts'
+
 
 --love.graphics.draw( drawable, x, y, r, sx, sy, ox, oy, kx, ky )
 function love.load()
@@ -18,8 +25,6 @@ function love.load()
 	love.window.setMode(1024, 768)
 	music_src1 = love.audio.newSource("audio/sundara.ogg")
 	music_src1:play()
-
-
 
 -- Setup globals
 	global_width = love.graphics.getWidth()
@@ -41,7 +46,7 @@ function love.load()
 	
 	player = Player.new()
 	player.global_index = add_object(global_obj_array, global_obj_pointer, player)
-
+	Ground_enemy_base(player.x, player.y)
 
 -- Setup HUD
 	
@@ -205,6 +210,7 @@ function love.update()
 
 
 	-- Update moving objects
+	print('updating')
 	update_objects();
 	move_objects();
 
@@ -212,7 +218,6 @@ end
 
 function love.draw()
 
-	
 
 	love.graphics.setColor(255,255,255)
 	love.graphics.draw(terrain_atlas)

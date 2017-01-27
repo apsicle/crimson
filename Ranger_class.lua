@@ -6,7 +6,7 @@ function Ranger.new(x, y, N, speed, radius, color, damage, collision_group)
 	ranger.color = color
 	ranger.x = x
 	ranger.y = y
-	ranger.N = N
+	ranger.N = 5
 	ranger.speed = speed
 	ranger.radius = radius
 	ranger.shot_counter = 0
@@ -93,7 +93,7 @@ function Ranger:draw()
 end
 
 function Ranger:resolve_collision(collider)
-	if collider.color ~= global_palette[1] and collider.color ~= nil then
+	if collider.color ~= global_palette[1] then--and collider.color ~= nil then
 		self.color = collider.color
 	else
 		self.hp = self.hp - 1

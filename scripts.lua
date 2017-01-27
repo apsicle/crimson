@@ -1,9 +1,6 @@
 --Collision groups: 0 - items/pickupable, 1 - player, 2 - standard enemies 
 
 
-function sign(x)
-  return x>0 and 1 or x<0 and -1 or 0
-end
 
 function add_object(array, pointer, object)
 	--inserts an object in an table and returns the index at which it was inserted
@@ -12,26 +9,6 @@ function add_object(array, pointer, object)
 	return pointer
 end
 
-
-function collide(obj_a, obj_b)
-	obj_a:resolve_collision(obj_b)
-	obj_b:resolve_collision(obj_a)
-	obj_a:update()
-	obj_b:update()
-	return
-end
-
-function clamp(min, max, num)
-	return math.max(math.min(num, max), min)
-end
-
-function color_index(color) 
-	for i, value in pairs(global_palette) do
-		if color == value then
-			return i
-		end
-	end
-end
 
 function blend_colors(rgb1, rgb2, t)
 	-- sqrt( [1-t]*rgb1^2 + [t]*rgb2^2)
@@ -48,8 +25,78 @@ function blend_colors(rgb1, rgb2, t)
 	return rgb3;
 end
 
-function sq(num)
-	return num * num
+
+function check_collision(object) 
+	if object.ray_class ~= nil then
+		return raycast(object, object.d, object.e)
+	else
+	end
+end
+
+function clamp(min, max, num)
+	return math.max(math.min(num, max), min)
+end
+
+function Class(...)
+	--takes 0 or 1 meaningful argument.
+	--if given a class object, will return a class that inherits all metamethods and init values from that class.
+
+	local t = {n=select('#',...),...}
+	d_class = {}
+	if t.n ~= 0
+		then
+
+		for k, v in pairs(t[1]) do
+	  		d_class[k] = v
+		end
+
+		d_class.__index = d_class
+
+		setmetatable(d_class, {
+			__call = function(cls, ...)
+				local self = setmetatable({}, cls)
+				self:_init(...)
+				return self
+			end,
+		})
+
+		function d_class:_init(...)
+			t[1]._init(self, ..., true)
+			return
+		end
+	end
+	
+
+	return d_class
+end
+
+
+function collide(obj_a, obj_b)
+	obj_a:resolve_collision(obj_b)
+	obj_b:resolve_collision(obj_a)
+	obj_a:update()
+	obj_b:update()
+	return
+end
+
+function color_index(color) 
+	for i, value in pairs(global_palette) do
+		if color == value then
+			return i
+		end
+	end
+end
+
+function distance_coord_sq(x1, y1, x2, y2) 
+	return sq(x2 - x1) + sq(y2 - y1)
+end
+
+function distance_obj_sq(obj1, obj2)
+	return sq(obj1.x - obj2.x) + sq(obj1.y - obj2.y)
+end
+
+function distance_obj(obj1, obj2)
+	return math.sqrt(sq(obj1.x - obj2.x) + sq(obj1.y - obj2.y))
 end
 
 function move_constant_speed(self, x2, y2, speed)
@@ -73,23 +120,10 @@ function move_constant_speed(self, x2, y2, speed)
 	return false;
 end
 
-function distance_coord_sq(x1, y1, x2, y2) 
-	return sq(x2 - x1) + sq(y2 - y1)
-end
 
-function distance_obj_sq(obj1, obj2)
-	return sq(obj1.x - obj2.x) + sq(obj1.y - obj2.y)
-end
-
-function distance_obj(obj1, obj2)
-	return math.sqrt(sq(obj1.x - obj2.x) + sq(obj1.y - obj2.y))
-end
-
-
-function check_collision(object) 
-	if object.ray_class ~= nil then
-		return raycast(object, object.d, object.e)
-	else
+function print_table(table)
+	for i, v in pairs(table) do
+		print(i, v)
 	end
 end
 
@@ -134,9 +168,8 @@ function raycast(self, d, e)
 			if value.is_shard ~= nil then
 
 
-			elseif value.status ~= nil then
-				if value.status:check_status("jaunted") then
-				end
+			elseif value.status:check_status("jaunted") then
+			
 
 			--elseif value.inanimate ~= nil then
 
@@ -197,8 +230,10 @@ function sample(arr)
 	end
 end
 
-function print_table(table)
-	for i, v in pairs(table) do
-		print(i, v)
-	end
+function sign(x)
+  return x>0 and 1 or x<0 and -1 or 0
+end
+
+function sq(num)
+	return num * num
 end
