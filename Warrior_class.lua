@@ -85,16 +85,20 @@ function Loopy_ghost:attack(obj)
 end
 
 
-function Loopy_ghost:draw()
+function Loopy_ghost:draw(i)
 	--love.graphics.setColor(self.color)
 	--self.sprite:draw()
-	love.graphics.setColor(self.color)
-	if self.state == "moving"  then
-		self.animation_moving:update(1)
-		self.animation_moving:draw(self.sprite_moving, self.x, self.y - 20, (math.pi/180) * sign(player.x - self.x) * 10, 1, 1)
-	else
-		self.animation_attacking:update(1)
-		self.animation_attacking:draw(self.sprite_attacking, self.x, self.y - 20, (math.pi/180) * sign(player.x - self.x) * 10, 1, 1)
+	if i == 2 then
+
+		love.graphics.setColor(self.color)
+		if self.state == "moving"  then
+			self.animation_moving:update(1)
+			self.animation_moving:draw(self.sprite_moving, self.x, self.y - 20, (math.pi/180) * sign(player.x - self.x) * 10, 1, 1)
+		else
+			self.animation_attacking:update(1)
+			self.animation_attacking:draw(self.sprite_attacking, self.x, self.y - 20, (math.pi/180) * sign(player.x - self.x) * 10, 1, 1)
+		end
+
 	end
 end
 

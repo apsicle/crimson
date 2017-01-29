@@ -22,7 +22,7 @@ function Game_object_base:_init(x, y, suppress)
 	self.status = Status_table.new(self)
 	self.z_index = 1
 
-	if suppress == false then
+	if suppress == false then 	
 		self.global_index = add_object(global_obj_array, global_obj_pointer, self)
 	end
 end
@@ -31,17 +31,11 @@ function Game_object_base:update()
 	return
 end
 
-function Game_object_base:draw()
-
-	love.graphics.setColor(self.color)
-	love.graphics.draw(self.sprite, self.x - self.radius, self.y - self.radius)
+function Game_object_base:draw(i)
+	return
 end
 
 function Game_object_base:move()
-	local xpos = math.random(-15,15)
-	local ypos = math.random(-15,15)
-	self.x = self.x + xpos
-	self.y = self.y + ypos
 	return
 end
 

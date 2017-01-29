@@ -16,12 +16,13 @@ function Player.new (x, y, N, collision_group)
 	player.N = N or 4
 	player.color = global_palette[1]
 	player.radius = 16;
-	player.speed = 4;
+	player.speed = 16;
 	player.damage = 0;
 	player.angle = 0;
 	player.status = Status_table.new(player)
 	player.spells = Spell_table.new(player)
 	player.z_index = 2;
+	player.state = "standing"
 
 	player.collision_group = 1
 	player.bullet_refresh_speed = 15;
@@ -36,7 +37,10 @@ function Player.new (x, y, N, collision_group)
 
 	-- Sprite
 	player.hat = love.graphics.newImage("sprites/my_hat.png")
-	player.sprite = Polygon.new(player.x, player.y, player.N, player.radius)
+	--player.sprite = Polygon.new(player.x, player.y, player.N, player.radius)
+	player.sprite = love.graphics.newImage('sprites/wizard1.png')
+	local g = anim8.newGrid(64, 64, player.sprite:getWidth(), player.sprite:getHeight())
+  	player.animation_moving = anim8.newAnimation(g(tostring(1) .. '-' .. tostring(player.sprite:getWidth() / 64),1), 10)
 	player.spell_animation = nil
 
 	--define the color palette for the player. Player character can switch between these freely.
@@ -51,20 +55,22 @@ end
 
 
 function Player:shoot()
-	if 1==1 then
+	if self.status:check_status('reloading') ~= true then
 		local angle = math.atan2(love.mouse.getY() - self.y, love.mouse.getX() - self.x);
-		local xdisp = math.cos(angle) * self.radius / 2
-		local ydisp = math.sin(angle) * self.radius / 2
-		Bullet.new(self.x + xdisp, self.y + ydisp, self.N, angle, 10, self.radius / 4, self.color, 1, self.collision_group);
+		local xdisp = math.cos(angle) * 32
+		local ydisp = math.sin(angle) * 32
+		--Bullet.new(self.x + xdisp, self.y + ydisp, self.N, angle, 10, self.radius / 4, self.color, 1, self.collision_group);
 		
-		self.bullet_counter = self.bullet_refresh_speed
+		Animation(self.x + 32 + xdisp, self.y + 32 + ydisp, lov.egraphics.newImage('sprites/left_strike1.png'), math.pi - angle)
+
+		self.status:activate_status('reloading')
 	end
 end
 
 function Player:update()
 	self.status:update()
 	--print_table(self.status:get_status('invincible'))
-
+	self.state = "standing"
 
 	if self.hp <= 0 then
 		global_obj_array[self.global_index] = nil
@@ -77,32 +83,32 @@ function Player:move()
 	-- Player controls. I figure I'll just put this on the first layer, ie. in update, so there's the least overhead as possible?
 	-- Movement:
     if (self.status:check_status('airborne')) then
-    	
-
     		--self.y = self.y + .1*(.5*self.airborne_max - self.airborne_counter)
     		--self.y = self.y - .001*(self.airborne_counter)*(self.airborne_counter - self.airborne_max) + (-0.25*0.001*sq(self.airborne_max))
 
     	local airborne_status = player.status:get_status('airborne')
-    	self.sprite.y = self.sprite.y - .025 *(2*airborne_status['timer'] - airborne_status['timer_max'])
+    	self.sprite_y = self.sprite_y - .025 *(2*airborne_status['timer'] - airborne_status['timer_max'])
     		--self.y = self.y - .025 *(2*self.airborne_counter - self.airborne_max)
     	
-    	self.sprite:move(self.sprite.x, self.sprite.y)
+    	--self.sprite:move(self.sprite.x, self.sprite.y)
 
 
     else
-
-
 		if (love.keyboard.isDown('w')) then
 			player.y = player.y - player.speed
+			self.state = "moving"
 		end
 		if (love.keyboard.isDown('a')) then
 			player.x = player.x - player.speed
+			self.state = "moving"
 		end
 		if (love.keyboard.isDown('s')) then
 			player.y = player.y + player.speed
+			self.state = "moving"
 		end
 		if (love.keyboard.isDown('d')) then
 			player.x = player.x + player.speed
+			self.state = "moving"
 		end
 
 		--Rotating. Pretty much just rotates by 2 degrees.
@@ -177,47 +183,44 @@ function Player:move()
 
 
 	--Move sprite
-	self.sprite:move(self.x, self.y, self.angle)
+	--self.sprite:move(self.x, self.y, self.angle)
+	self.sprite_x = self.x
+	self.sprite_y = self.y
 	end
 
 end
 
-function Player:draw() 
+function Player:draw(i) 
 	
-	
-	love.graphics.setColor(self.color)
-	self.sprite:draw()
-	love.graphics.setColor(11,180,214)
-	love.graphics.draw(self.hat, self.sprite.x-self.radius, self.sprite.y-self.radius*2)
+	if i == 3 then
+		if self.status:get_status('invincible')['timer'] % 5 == 0 then
+			love.graphics.setColor(self.color)
+
+
+			if self.state == "moving" then
+				self.animation_moving:resume()
+				self.animation_moving:update(1)
+				self.animation_moving:draw(self.sprite, self.sprite_x, self.sprite_y)
+				
+			elseif self.state == "standing" then
+				self.animation_moving:gotoFrame(1)
+				self.animation_moving:draw(self.sprite, self.sprite_x, self.sprite_y)
+				
+			end
+
+			love.graphics.setColor(11,180,214)
+				love.graphics.draw(self.hat, self.sprite_x + self.hat:getWidth() / 2, self.sprite_y - self.hat:getWidth() / 2)
+
+		end
+	end
 end
 
 
 
 function Player:check_collisions()
 
-	local collidable_objs = {}
-	for key, value in pairs(global_obj_array) do
-		if value ~= nil then
-			if (value.collision_group ~= self.collision_group) then
-				if value.item ~= nil then
-					--player object is the only object that can collide with items
-					table.insert(collidable_objs, value)
-				elseif value.is_shard ~= nil then
-					--player object collides with shards no matter what
-					table.insert(collidable_objs, value)
-				elseif value.color ~= self.color then
-					--if you are different colors, you can collide
-					table.insert(collidable_objs, value)
-				end
-			end
-		end
-	end
-
-	for key, value in pairs(collidable_objs, value) do
-		if radcheck(self, value) then
-			collide(self, value)
-		end
-	end
+	
+	circle_cast(self)
 end
 
 function Player:resolve_collision(collider)

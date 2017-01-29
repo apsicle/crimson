@@ -86,9 +86,11 @@ function Ranger:shoot()
 end
 
 
-function Ranger:draw()
+function Ranger:draw(i)
+	if i == 2 then
 	love.graphics.setColor(self.color)
 	self.sprite:draw()
+	end
 end
 
 function Ranger:resolve_collision(collider)

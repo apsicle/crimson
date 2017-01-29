@@ -33,15 +33,54 @@ function check_collision(object)
 	end
 end
 
-function circle_cast(self)
+function circle_cast(self, collision_func, return_objs)
 	local collidable_objs = {}
+	local collided_objs = {}
+
+	--Defaults to false. If this is true, this function does not perform collisions but instead
+	--returns a table of objects you collided with and assumes you want to do special collision effects.
+	local return_objs = return_objs or false
 
 	if self ~= player then
 
+		--Find objects that can be collided with
 		for key, value in pairs(global_obj_array) do
 			if value ~= nil then
 				if (value.collision_group ~= self.collision_group) then
 					if value.non_collidable ~= nil then
+					--elseif value.color ~= self.color then
+						--if you are different colors, you can collide
+					else
+						table.insert(collidable_objs, value)
+					end
+				end
+			end
+		end
+
+		--Check if you really did collide with them
+		for key, value in pairs(collidable_objs, value) do
+			if collision_func(self, value) then
+				
+				if return_objs == true then
+					table.insert(collided_objs, value)
+				else
+					collide(self, value)
+				end
+
+			end
+		end
+	else
+		for key, value in pairs(global_obj_array) do
+			if value ~= nil then
+				if (value.collision_group ~= self.collision_group) then
+					if value.noncollidable ~= nil then
+						--can't collide with noncollidable
+					elseif value.item ~= nil then
+						--player object is the only object that can collide with items
+						table.insert(collidable_objs, value)
+					elseif value.is_shard ~= nil then
+						--player object collides with shards no matter what
+						table.insert(collidable_objs, value)
 					elseif value.color ~= self.color then
 						--if you are different colors, you can collide
 						table.insert(collidable_objs, value)
@@ -49,13 +88,14 @@ function circle_cast(self)
 				end
 			end
 		end
+
 		for key, value in pairs(collidable_objs, value) do
 			if radcheck(self, value) then
 				collide(self, value)
 			end
 		end
-
-	end
+end
+	return collided_objs
 end
 
 function clamp(min, max, num)
@@ -124,6 +164,10 @@ function distance_obj(obj1, obj2)
 	return math.sqrt(sq(obj1.x - obj2.x) + sq(obj1.y - obj2.y))
 end
 
+function in_range(num, i, j)
+	return i <= num and j >= num 
+end
+
 function move_constant_speed(self, x2, y2, speed)
 	--for when you know only the magnitude to travel, and do not have access to vectorized (x, y) movement.
 	local x_dist = x2 - self.x
@@ -145,6 +189,14 @@ function move_constant_speed(self, x2, y2, speed)
 	return false;
 end
 
+function on_tile(obj, x, y)
+	return in_range(obj.x, x * 32, x * 32 + 32) and in_range(obj.y, y * 32, y * 32 + 32)
+end
+
+function move_to_obj(obj_a, obj_b)
+	obj_a.x = obj_b.x
+	obj_a.y = obj_b.y
+end
 
 function print_table(table)
 	for i, v in pairs(table) do
@@ -154,6 +206,13 @@ end
 
 function radcheck(self, obj)
 	if distance_obj_sq(self, obj) < (sq(self.radius) + sq(obj.radius)) then
+		return true
+	end
+	return false
+end
+
+function in_my_radius(self, obj)
+	if distance_obj_sq(self, obj) < (sq(self.radius)) then
 		return true
 	end
 	return false
@@ -186,23 +245,22 @@ function raycast(self, d, e)
 	
 	local collidable_objs = {}
 	for key, value in pairs(global_obj_array) do
-		if (value.collision_group ~= self.collision_group) then
+		if value.noncollidable == nil then
+			if (value.collision_group ~= self.collision_group) then
 			-- if any of these except 'else', don't even try to collide
 
 
-			if value.is_shard ~= nil then
+				if value.is_shard ~= nil then
 
 
-			elseif value.status:check_status("jaunted") then
-			
-
-			--elseif value.inanimate ~= nil then
+				elseif value.status:check_status("jaunted") then
 
 
-			else
-				--you may be able to collide, but check here.
-				if value.color ~= self.color then
-					table.insert(collidable_objs, value)
+				else
+					--you may be able to collide, but check here.
+					if value.color ~= self.color then
+						table.insert(collidable_objs, value)
+					end
 				end
 			end
 		end
@@ -240,9 +298,6 @@ function raycast(self, d, e)
 
 	return colliding_obj, min_t
 end
-
-
-
 
 function sample(arr) 
 	sum = 0

@@ -20,7 +20,7 @@ function Bullet.new(x, y, N, direction, speed, radius, color, damage, collision_
 end
 
 function Bullet:update()
-	if (self.hp <= 0) or (self.x > global_width) or (self.x < 0) or (self.y > global_height) or (self.y < 0) then
+	if (self.hp <= 0) or (self.x > global_width - 33) or (self.x < 0 + 33) or (self.y > global_height - 33) or (self.y < 0 + 33) then
 		global_obj_array[self.global_index] = nil
 	end
 end

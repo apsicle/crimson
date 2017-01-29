@@ -38,10 +38,12 @@ function Shard:move()
 	
 end
 
-function Shard:draw()
-	love.graphics.setColor(self.color)
-	love.graphics.draw(self.sprite, self.x, self.y, 0, 1, 1)
-	--self.sprite:draw();
+function Shard:draw(i)
+	if i == 1 then
+		love.graphics.setColor(self.color)
+		love.graphics.draw(self.sprite, self.x, self.y, 0, 1, 1)
+		--self.sprite:draw();
+	end
 end
 
 function Shard:resolve_collision(collider)
