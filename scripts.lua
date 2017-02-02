@@ -34,6 +34,8 @@ function check_collision(object)
 end
 
 function circle_cast(self, collision_func, return_objs)
+	-- use radcheck or in_my_radius. radcheck = if dist between < both radii combined then collide. In_my_radius = ... in your radius.
+
 	local collidable_objs = {}
 	local collided_objs = {}
 
@@ -47,7 +49,7 @@ function circle_cast(self, collision_func, return_objs)
 		for key, value in pairs(global_obj_array) do
 			if value ~= nil then
 				if (value.collision_group ~= self.collision_group) then
-					if value.non_collidable ~= nil then
+					if value.noncollidable ~= nil then
 					--elseif value.color ~= self.color then
 						--if you are different colors, you can collide
 					else
@@ -135,6 +137,15 @@ function Class(...)
 	return d_class
 end
 
+function clear_all(...)
+	-- clears global object array except for player
+	local t = {n=select('#', ...), ...}
+	for ind, value in pairs(global_obj_array) do
+		if value ~= player then
+		global_obj_array[ind] = nil
+		end
+	end
+end
 
 function collide(obj_a, obj_b)
 	obj_a:resolve_collision(obj_b)
@@ -150,6 +161,13 @@ function color_index(color)
 			return i
 		end
 	end
+end
+
+function create_animation(image, rate)
+	-- takes in a newImage var from love and a rate. Lower rate = faster animation
+	local grid = anim8.newGrid(image:getHeight(), image:getHeight(), image:getWidth(), image:getHeight())
+  	local animation = anim8.newAnimation(grid(tostring(1) .. '-' .. tostring(image:getWidth() / image:getHeight()),1), rate)
+  	return animation
 end
 
 function distance_coord_sq(x1, y1, x2, y2) 
@@ -205,6 +223,10 @@ function print_table(table)
 end
 
 function radcheck(self, obj)
+	if self.radius == 20 then
+		print( self.radius)
+		print(obj.radius)
+	end
 	if distance_obj_sq(self, obj) < (sq(self.radius) + sq(obj.radius)) then
 		return true
 	end

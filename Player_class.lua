@@ -16,12 +16,13 @@ function Player.new (x, y, N, collision_group)
 	player.N = N or 4
 	player.color = global_palette[1]
 	player.radius = 16;
-	player.speed = 16;
+	player.speed = 3;
 	player.damage = 0;
 	player.angle = 0;
 	player.status = Status_table.new(player)
 	player.spells = Spell_table.new(player)
 	player.z_index = 2;
+	player.facing = "down"
 	player.state = "standing"
 
 	player.collision_group = 1
@@ -35,13 +36,23 @@ function Player.new (x, y, N, collision_group)
 	player.max_mp = 100
 	-- red, blue, green, purple
 
-	-- Sprite
+	-- SPRITES / ANIMATIONS
 	player.hat = love.graphics.newImage("sprites/my_hat.png")
-	--player.sprite = Polygon.new(player.x, player.y, player.N, player.radius)
-	player.sprite = love.graphics.newImage('sprites/wizard1.png')
-	local g = anim8.newGrid(64, 64, player.sprite:getWidth(), player.sprite:getHeight())
-  	player.animation_moving = anim8.newAnimation(g(tostring(1) .. '-' .. tostring(player.sprite:getWidth() / 64),1), 10)
-	player.spell_animation = nil
+
+	-- running up
+	player.sprite_running_up = love.graphics.newImage('sprites/wizard1.png')
+	player.animation_running_up = create_animation(player.sprite_running_up, 10)
+
+  	-- running side to side
+  	player.sprite_running_side = love.graphics.newImage('sprites/wizard1_running_side.png')
+	player.animation_running_side = create_animation(player.sprite_running_side, 3)
+
+	-- running down
+
+	-- facing side
+	player.sprite_facing_side = love.graphics.newImage('sprites/wizard1_facing_side.png')
+
+	
 
 	--define the color palette for the player. Player character can switch between these freely.
 	player.palette = global_palette
@@ -60,9 +71,20 @@ function Player:shoot()
 		local xdisp = math.cos(angle) * 32
 		local ydisp = math.sin(angle) * 32
 		--Bullet.new(self.x + xdisp, self.y + ydisp, self.N, angle, 10, self.radius / 4, self.color, 1, self.collision_group);
+		if self.facing == "up" then
+			Temporary_collider{x = self.x, y = self.y-32, damage = 1, radius = 32}
+			Animation{x = self.x, y = self.y-32, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
+		elseif self.facing == "down" then
+			Temporary_collider{x = self.x, y = self.y+32, damage = 1, radius = 32}
+			Animation{x = self.x, y = self.y+32, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
+		elseif self.facing == "left" then
+			Temporary_collider{x = self.x-32, y = self.y, damage = 1, radius = 32}
+			Animation{x = self.x-32, y = self.y, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
+		elseif self.facing == "right" then
+			Temporary_collider{x = self.x+32, y = self.y, damage = 1, radius = 32}
+			Animation{x = self.x+32, y = self.y, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
+		end
 		
-		Animation(self.x + 32 + xdisp, self.y + 32 + ydisp, lov.egraphics.newImage('sprites/left_strike1.png'), math.pi - angle)
-
 		self.status:activate_status('reloading')
 	end
 end
@@ -70,7 +92,6 @@ end
 function Player:update()
 	self.status:update()
 	--print_table(self.status:get_status('invincible'))
-	self.state = "standing"
 
 	if self.hp <= 0 then
 		global_obj_array[self.global_index] = nil
@@ -94,21 +115,33 @@ function Player:move()
 
 
     else
-		if (love.keyboard.isDown('w')) then
-			player.y = player.y - player.speed
-			self.state = "moving"
+    	-- TAKING DIRECTIONAL INPUT
+    	-- When you press a wasd key, start running in that direction if you're not already running.
+    	-- When you stop running (are not pressing a wasd key), then stop running but keep facing whichever direction you were already facing
+	
+		if (love.keyboard.isDown('up')) then
+			--if self.state ~= "running" then
+				self.state = "running"
+				self.facing = "up"
+			--end
 		end
-		if (love.keyboard.isDown('a')) then
-			player.x = player.x - player.speed
-			self.state = "moving"
+		if (love.keyboard.isDown('down')) then
+			--if self.state ~= "running" then
+				self.state = "running"
+				self.facing = "down"
+			--end
 		end
-		if (love.keyboard.isDown('s')) then
-			player.y = player.y + player.speed
-			self.state = "moving"
+		if (love.keyboard.isDown('left')) then
+			--if self.state ~= "running" then
+				self.state = "running"
+				self.facing = "left"
+			--end
 		end
-		if (love.keyboard.isDown('d')) then
-			player.x = player.x + player.speed
-			self.state = "moving"
+		if (love.keyboard.isDown('right')) then
+			--if self.state ~= "running" then
+				self.state = "running"
+				self.facing = "right"
+			--end
 		end
 
 		--Rotating. Pretty much just rotates by 2 degrees.
@@ -121,7 +154,7 @@ function Player:move()
 			player.angle = player.angle - 2*math.pi/180;
 		end 
 
-		-- Let the player control the color palette
+		-- CONTROLLING ELEMENTS
 		if (love.keyboard.isDown('1')) then
 			if self.palette[1] ~= nil then
 				self.color = self.palette[1];
@@ -153,11 +186,11 @@ function Player:move()
 		end
 
 		--Shooting. Create mini versions of yourself with direction and velocity
-		if(love.mouse.isDown(1)) then
+		if(love.keyboard.isDown('a')) then
 			player:shoot()
 		end
 
-		if(love.mouse.isDown(2)) then
+		if(love.keyboard.isDown('w')) then
 			player:boomerang()
 		end
 
@@ -182,8 +215,20 @@ function Player:move()
 
 
 
-	--Move sprite
+	--Move char and spritesprite
 	--self.sprite:move(self.x, self.y, self.angle)
+	if self.state == 'running' then
+		if self.facing =='up' then
+			self.y = self.y - self.speed
+		elseif self.facing == 'down' then
+			self.y = self.y + self.speed
+		elseif self.facing == 'left' then
+			self.x = self.x - self.speed
+		elseif self.facing == 'right' then
+			self.x = self.x + self.speed
+		end
+	end
+
 	self.sprite_x = self.x
 	self.sprite_y = self.y
 	end
@@ -195,40 +240,72 @@ function Player:draw(i)
 	if i == 3 then
 		if self.status:get_status('invincible')['timer'] % 5 == 0 then
 			love.graphics.setColor(self.color)
+		
 
+			if self.facing == "up" then
+				if self.state == "running" then
+					self.animation_running_up:resume()
+					self.animation_running_up:update(1)
+					self.animation_running_up:draw(self.sprite_running_up, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 32)
+				else
+					self.animation_running_up:gotoFrame(1)
+					self.animation_running_up:draw(self.sprite_running_up, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 32)
+				end
+			elseif self.facing == "down" then
+				if self.state == "running" then
+					self.animation_running_up:resume()
+					self.animation_running_up:update(1)
+					self.animation_running_up:draw(self.sprite_running_up, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 32)
+				else
+					self.animation_running_up:gotoFrame(1)
+					self.animation_running_up:draw(self.sprite_running_up, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 32)
+				end
 
-			if self.state == "moving" then
-				self.animation_moving:resume()
-				self.animation_moving:update(1)
-				self.animation_moving:draw(self.sprite, self.sprite_x, self.sprite_y)
-				
-			elseif self.state == "standing" then
-				self.animation_moving:gotoFrame(1)
-				self.animation_moving:draw(self.sprite, self.sprite_x, self.sprite_y)
-				
+			elseif self.facing == "left" then
+				if self.state == "running" then
+					self.animation_running_side:resume()
+					self.animation_running_side:update(1)
+					self.animation_running_side:draw(self.sprite_running_side, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 32)
+				else
+					local img = self.sprite_facing_side
+					local origin = {x = img:getWidth() * 0.5, y = img:getHeight() * 0.5}
+					love.graphics.draw(self.sprite_facing_side, self.sprite_x, self.sprite_y, 0, 1, 1, origin.x, origin.y)
+				end
+			elseif self.facing == "right" then
+				if self.state == "running" then
+					local img = self.sprite_running_side
+					local origin = {x = img:getWidth() * 0.5, y = img:getHeight() * 0.5}
+					self.animation_running_side:resume()
+					self.animation_running_side:update(1)
+					self.animation_running_side:draw(self.sprite_running_side, self.sprite_x, self.sprite_y, 0, -1, 1, 32, 32)
+				else
+					local img = self.sprite_facing_side
+					local origin = {x = img:getWidth() * 0.5, y = img:getHeight() * 0.5}
+					love.graphics.draw(self.sprite_facing_side, self.sprite_x, self.sprite_y, 0, -1, 1, origin.x, origin.y)
+				end
 			end
 
-			love.graphics.setColor(11,180,214)
-				love.graphics.draw(self.hat, self.sprite_x + self.hat:getWidth() / 2, self.sprite_y - self.hat:getWidth() / 2)
 
+			love.graphics.setColor(11,180,214)
+				love.graphics.draw(self.hat, self.sprite_x, self.sprite_y, 0, 1, 1, 16, 48)
+			end
 		end
-	end
 end
 
 
 
 function Player:check_collisions()
-
-	
 	circle_cast(self)
 end
 
 function Player:resolve_collision(collider)
 	if collider.is_shard ~= nil then
-		local index = color_index(collider.color)
-		if self.mp[index - 1] <= self.max_mp then
-			self.mp[index - 1] = self.mp[index - 1] + 1
-			setup_mana();
+		local index = color_index(collider.color) 
+		if index ~= nil then
+			if self.mp[index - 1] <= self.max_mp then
+				self.mp[index - 1] = self.mp[index - 1] + 1
+				setup_mana();
+			end
 		end
 		
 
@@ -241,3 +318,8 @@ function Player:resolve_collision(collider)
 	end
 end
 
+function love.keyreleased(key) 
+	if key == "up" or key == "down" or key == "left" or key == "right" then
+		player.state = "standing"
+	end
+end

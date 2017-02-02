@@ -193,6 +193,7 @@ function setup_terrain(terrain_quads, center_arr)
 end
 
 function load_room(direction)
+    clear_all();
     global_room_transition = 60
     if math.random() < 0.5 then
         setup_terrain(grass_quads, grass_center_arr)
@@ -223,7 +224,7 @@ function load_room(direction)
         player.y = global_height / 2
     end
 
-    Ranger(500, 150, 5, 2, 16, global_palette[love.math.random(1, 5)], 1, 3)
+    --Ranger(500, 150, 5, 2, 16, global_palette[love.math.random(1, 5)], 1, 3)
     Enemy_spawner.new(200, 150, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
     Enemy_spawner.new(600, 150, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
     Enemy_spawner.new(350, 450, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)

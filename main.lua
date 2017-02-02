@@ -21,6 +21,7 @@ require 'Ranger_class'
 require 'Enemy_spawner_class'
 require 'Wall_class'
 require 'Shard_class'
+require 'Temporary_collider_class'
 
 -- Levels and World --
 require 'Rooms'
@@ -151,8 +152,12 @@ function move_objects()
 	for key, value in pairs(global_obj_array) do
 		value:move()
 
+		if type(value.x) == 'table' then
+			print_table(value)
+		end
 		--don't let objects move beyond walls
 		if value.x > global_width - 32 then
+
 			value.x = global_width - 32
 		end
 		if value.y > global_height - 32 then
