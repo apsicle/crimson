@@ -9,13 +9,14 @@ function Enemy_spawner.new(x, y, N, speed, radius, color, collision_group)
 	enemy_spawner.y = y
 	enemy_spawner.speed = speed
 	enemy_spawner.radius = radius
-	enemy_spawner.counter = 0
+	enemy_spawner.counter = 180
 	enemy_spawner.damage = 0.5
 	enemy_spawner.status = Status_table.new(enemy_spawner)
 	enemy_spawner.collision_group = collision_group
 	enemy_spawner.hp = 10
 	enemy_spawner.z_index = 3
-	enemy_spawner.sprite = Polygon.new(x, y, N, radius)
+	--enemy_spawner.sprite = Polygon.new(x, y, N, radius)
+	enemy_spawner.sprite = love.graphics.newImage('sprites/loopy_ghost_grave.png')
 
 	enemy_spawner.global_index = add_object(global_obj_array, global_obj_pointer, enemy_spawner)
 	return enemy_spawner
@@ -33,13 +34,15 @@ function Enemy_spawner:move()
 		Loopy_ghost.new(self.x, self.y, 2, 1, 16, self.color, 0.5, 2)
 	end
 
-	self.sprite:move(self.x, self.y)
+	--self.sprite:move(self.x, self.y)
 	self.counter = self.counter + 1
 end
 
 function Enemy_spawner:draw()
-	love.graphics.setColor(self.color)
-	self.sprite:draw()
+	--love.graphics.setColor(self.color)
+	--self.sprite:draw()
+	love.graphics.setColor(global_palette[1])
+	love.graphics.draw(self.sprite, self.x, self.y)
 end
 
 function Enemy_spawner:resolve_collision(collider)

@@ -15,9 +15,10 @@ function Loopy_ghost.new(x, y, N, speed, radius, color, damage, collision_group)
 	loopy_ghost.counter = 0
 	loopy_ghost.damage = damage
 	loopy_ghost.collision_group = 2
-	loopy_ghost.hp = 1
+	loopy_ghost.hp = 3
 	loopy_ghost.refresh_speed = 60
 	loopy_ghost.state = "moving"
+	loopy_ghost.destination = {x = 0, y = 0}
 	loopy_ghost.stagger_max = 30;
 	loopy_ghost.stagger = 30;
 
@@ -38,9 +39,11 @@ function Loopy_ghost.new(x, y, N, speed, radius, color, damage, collision_group)
 end
 
 function Loopy_ghost:update()
+	self.status:update()
 	if self.hp <= 0 then
 		self:destroy();
 	end
+
 end
 
 function Loopy_ghost:destroy()
@@ -86,11 +89,11 @@ end
 
 
 function Loopy_ghost:draw(i)
-	--love.graphics.setColor(self.color)
+	love.graphics.setColor(self.color)
 	--self.sprite:draw()
 	if i == 2 then
 
-		love.graphics.setColor(self.color)
+		--love.graphics.setColor(global_palette[1])
 		if self.state == "moving"  then
 			self.animation_moving:update(1)
 			self.animation_moving:draw(self.sprite_moving, self.x, self.y - 20, (math.pi/180) * sign(player.x - self.x) * 10, 1, 1)
@@ -107,6 +110,12 @@ function Loopy_ghost:resolve_collision(collider)
 		self.color = collider.color
 	else
 		self.hp = self.hp - collider.damage
+		local x_disp = player.x - self.x
+		local y_disp = player.y - self.y
+		self.destination.x = self.x - x_disp 
+		self.destination.y = self.y - y_disp
+		self.state = "hit"
+		self.status:activate_status('hit', 60, function() print('succesfesf') move_constant_speed(self, self.destination.x, self.destination.y, self.speed * 3) end, function() self.state = "moving" end)
 	end
 end
 

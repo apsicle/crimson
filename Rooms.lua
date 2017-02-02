@@ -225,7 +225,15 @@ function load_room(direction)
     end
 
     --Ranger(500, 150, 5, 2, 16, global_palette[love.math.random(1, 5)], 1, 3)
-    Enemy_spawner.new(200, 150, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
-    Enemy_spawner.new(600, 150, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
-    Enemy_spawner.new(350, 450, 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
+    local ghosts = math.random(2,4)
+    for i = 1, ghosts, 1 do
+        Enemy_spawner.new(math.random(100, 600), math.random(150, 500), 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
+    end
+    local rangers = math.random(0, 1)
+    for i = 1, rangers, 1 do
+        Ranger(math.random(200, 600), math.random(150, 500), 5, 2, 16, global_palette[love.math.random(1, 5)], 1, 2)
+    end
+   
+
+
 end

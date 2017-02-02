@@ -19,7 +19,73 @@ function Spell:_init(x, y)
 	return self
 end
 
--- SHOCKWAVE SPELL--
+-- BOOMERANG SPELL --
+Boomerang = Class(Spell)
+
+function Boomerang:_init(destination)
+	Spell._init(self, x, y, true)
+	self.sprite = love.graphics.newImage('sprites/my_hat.png')
+	self.x = player.x
+	self.y = player.y
+	self.mp_cost = {1, 0}
+	self.damage = 1
+	self.inanimate = true
+	self.speed = 4
+	self.collision_group = 1
+	self.angle = 0;
+	self.radius = (self.sprite:getWidth() / 2)
+	self.state = "outgoing"
+	self.global_index = add_object(global_obj_array,global_obj_pointer, self)
+	self.destination = destination
+	print_table(self.destination)
+
+end
+
+function Boomerang:update()
+	if self.x >= global_width - 32 then
+		self.state = "returning"
+		self.x = global_width - 32
+		end
+	if self.y >= global_height - 32 then
+		self.state = "returning"
+		self.y = global_height - 32
+		end
+	if self.x <= 0 + 32 then
+		self.state = "returning"
+		self.x = 0 + 32
+		end
+	if self.y <= 0 + 32 then
+		self.state = "returning"
+		self.y = 0 + 32
+		end
+	if distance_coord_sq(self.x, self.y, self.destination.x, self.destination.y) < 10 then
+		if self.state == "outgoing" then
+			self.state = "returning"
+		elseif self.state == "returning" then
+			global_obj_array[self.global_index] = nil
+		end
+	end
+	if self.state == "returning" then
+		self.destination.x = player.x
+		self.destination.y = player.y
+	end
+	self.angle = self.angle + (math.pi / 180) * 10
+
+
+end
+
+function Boomerang:move()
+	move_constant_speed(self, self.destination.x, self.destination.y, self.speed)
+	circle_cast(self, in_my_radius)
+	return
+end
+
+function Boomerang:draw()
+
+	love.graphics.draw(self.sprite, self.x, self.y, self.angle, 1, 1, self.sprite:getHeight() / 2, self.sprite:getHeight()/ 2)
+end
+
+-- SHOCKWAVE SPELL --
 Shockwave = Class(Spell)
 
 function Shockwave(self, x, y)
@@ -29,7 +95,7 @@ function Shockwave(self, x, y)
 	self.mp_cost = {5, 1}
 end
 
--- FREEZING FIELD--
+-- FREEZING FIELD --
 Freezing_field = Class(Spell)
 
 function Freezing_field:_init()
@@ -81,7 +147,9 @@ function Freezing_field:check_collisions()
 	if self.collided_objs ~= nil then
 
 		for ind, value in pairs(self.collided_objs) do
-			value.speed = 0
+			value.speed = 1
+			value.color = global_palette[3]
+			value.status:activate_status('stunned', 60, function(obj) obj.speed = 0 end, function(obj) obj.speed = 0.5 end)
 		end
 	end
 end

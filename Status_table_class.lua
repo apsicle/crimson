@@ -16,6 +16,8 @@ function Status_table.new(obj)
 	status_table:add_status("burned", 60)
 	status_table:add_status("jaunted", 180)
 	status_table:add_status("reloading", 30)
+	status_table:add_status("hit", 180)
+	status_table:add_status("stunned", 60)
 	--print(status_table:get_parent())
 	--print("arg1: ", arg[1], " arg2: ", arg[2])
 	--[[for ind, value in pairs(arg) do
@@ -35,6 +37,7 @@ function Status_table:add_status(string, timer_max)
 	my_table["timer"] = timer_max
 	my_table["timer_max"] = timer_max
 	my_table["running"] = false
+	my_table['effect'] = function () return end
 	my_table['callback'] = function() print('success') return end
 	--print(my_table)
 	--my_table:callback()
@@ -50,6 +53,7 @@ function Status_table:update()
 	for ind, value in pairs(self) do
 		if value.running == true then
 			-- if the status effect is active, do this stuff
+			value.effect(self:get_parent())
 			
 			if value.timer <= 0 then
 				-- if counter for this status is <= 0, times up. Reset the counter, set "counting down" to false, and tell the parent somehow.
@@ -69,15 +73,22 @@ end
 function Status_table:activate_status(...)
 	local t = {n=select('#',...),...}
 
-	setmetatable(t,{__index={timer_max = self[t[1]]['timer_max'], callback = function() print('kappa') return end}})
+	setmetatable(t,{__index={timer_max = self[t[1]]['timer_max'], effect = function() return end, callback = function() print('kappa') return end}})
 
-	local status, timer_max, callback =
+	local status, timer_max, effect, callback =
 		t[1] or 'frostbitten', -- default check frostbitten
 		t[2] or t['timer_max'],
-		t[3] or t['callback']
+		t[3] or t['effect'],
+		t[4] or t['callback']
 
+		if t[1] == 'hit' then
+			print(effect)
+			print(status)
+		end
 	self[status]['running'] = true
 	self[status]['timer_max'] = timer_max
+	self[status]['timer'] = timer_max
+	self[status]['effect'] = effect
 	self[status]['callback'] = callback
 end
 

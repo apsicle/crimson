@@ -52,6 +52,7 @@ function circle_cast(self, collision_func, return_objs)
 					if value.noncollidable ~= nil then
 					--elseif value.color ~= self.color then
 						--if you are different colors, you can collide
+					elseif value.is_shard ~= nil then
 					else
 						table.insert(collidable_objs, value)
 					end
@@ -161,6 +162,7 @@ function color_index(color)
 			return i
 		end
 	end
+	return nil
 end
 
 function create_animation(image, rate)
@@ -172,6 +174,10 @@ end
 
 function distance_coord_sq(x1, y1, x2, y2) 
 	return sq(x2 - x1) + sq(y2 - y1)
+end
+
+function distance_coord(x1, y1, x2, y2)
+	return math.sqrt(sq(x2 - x1) + sq(y2 - y1))
 end
 
 function distance_obj_sq(obj1, obj2)
@@ -191,19 +197,29 @@ function move_constant_speed(self, x2, y2, speed)
 	local x_dist = x2 - self.x
 	local y_dist = y2 - self.y
 
+	-- if one or both of the displacements is 0 then the algorithm goes wonky because the divide by 0, so this covers that.
+	if x_dist == 0 then
+		if y_dist == 0 then
+			return true
+		else
+			self.y = self.y + sign(y_dist)*speed
+			return true
+		end
+	elseif	y_dist == 0 then
+		self.x = self.x + sign(x_dist)*speed
+		return true
+	end
+	
+	-- stops the movement at a certain distance from the other object for sanity's sake also because there's weird twitching when you don't do this.
 	if sq(x_dist) + sq(y_dist) > 10 then
-
 		local k = y_dist / x_dist
 		local theta = math.atan2(y_dist, x_dist);
 		local a = math.sin(theta) * speed
 		local b = a / k
-
 		self.x = self.x + b
 		self.y = self.y + a;
-
 		return true;
 	end
-
 	return false;
 end
 

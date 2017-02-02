@@ -11,7 +11,7 @@ setmetatable(Temporary_collider, {
 -- To create temporary objects with sprites attached to them or not that hit things (like the boomerang hat)
 
 function Temporary_collider:_init(t)
-	setmetatable(t,{__index={x = 0, y = 0, speed=0, direction=0, sprite = nil, damage = 0, collision_group = player.collision_group, radius = 0, lifetime = 1}}) 
+	setmetatable(t,{__index={x = 0, y = 0, speed=0, direction=0, sprite = nil, damage = 0, collision_group = player.collision_group, radius = 0, lifetime = 1, effect = nil}}) 
 	print_table(t)
 	self.x = t[1] or t.x
 	self.y = t[2] or t.y 
@@ -44,6 +44,9 @@ function Temporary_collider:move()
 	return
 end
 
-function Temporary_collider:resolve_collision()
+function Temporary_collider:resolve_collision(collider)
+	if effect ~= nil then
+		--collider.activate_status(effect)
+	end
 	return
 end

@@ -72,16 +72,16 @@ function Player:shoot()
 		local ydisp = math.sin(angle) * 32
 		--Bullet.new(self.x + xdisp, self.y + ydisp, self.N, angle, 10, self.radius / 4, self.color, 1, self.collision_group);
 		if self.facing == "up" then
-			Temporary_collider{x = self.x, y = self.y-32, damage = 1, radius = 32}
+			Temporary_collider{x = self.x, y = self.y-32, damage = 1, radius = 32, effect = 'hit'}
 			Animation{x = self.x, y = self.y-32, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
 		elseif self.facing == "down" then
-			Temporary_collider{x = self.x, y = self.y+32, damage = 1, radius = 32}
+			Temporary_collider{x = self.x, y = self.y+32, damage = 1, radius = 32, effect = 'hit'}
 			Animation{x = self.x, y = self.y+32, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
 		elseif self.facing == "left" then
-			Temporary_collider{x = self.x-32, y = self.y, damage = 1, radius = 32}
+			Temporary_collider{x = self.x-32, y = self.y, damage = 1, radius = 32, effect = 'hit'}
 			Animation{x = self.x-32, y = self.y, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
 		elseif self.facing == "right" then
-			Temporary_collider{x = self.x+32, y = self.y, damage = 1, radius = 32}
+			Temporary_collider{x = self.x+32, y = self.y, damage = 1, radius = 32, effect = 'hit'}
 			Animation{x = self.x+32, y = self.y, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
 		end
 		
@@ -191,15 +191,33 @@ function Player:move()
 		end
 
 		if(love.keyboard.isDown('w')) then
-			player:boomerang()
+			if self.facing == "up" then
+				destination = {x = self.x, y = self.y - 250}
+			elseif self.facing == "down" then
+				destination = {x = self.x, y = self.y + 250}
+			elseif self.facing == "left" then
+				destination = {x = self.x - 250, y = self.y}
+			elseif self.facing == "right" then
+				destination = {x = self.x + 250, y = self.y}
+			end
+
+			if self.status:check_status('reloading') ~= true then
+				print(self.facing)
+				print(destination)
+				Boomerang(destination)
+				self.status:activate_status('reloading')
+			end
+
 		end
 
 		--Spells
 		if (love.keyboard.isDown('r')) then
 			if self.mp[1] > 10 then
-				self.status:activate_status('airborne', 180, 
+				self.status:activate_status('airborne', 180, function() end,
 					function(self) 
 						--Spells:shockwave(self, self.x, self.y) 
+						Temporary_collider{x = self.x, y = self.y, radius = 16, damage = 3}
+
 						self.status:activate_status('invincible', 60) end)
 				self.status:activate_status('jaunted', 180)
 			end
@@ -285,14 +303,11 @@ function Player:draw(i)
 				end
 			end
 
-
 			love.graphics.setColor(11,180,214)
-				love.graphics.draw(self.hat, self.sprite_x, self.sprite_y, 0, 1, 1, 16, 48)
-			end
+			love.graphics.draw(self.hat, self.sprite_x, self.sprite_y, 0, 1, 1, 16, 48)
 		end
+	end
 end
-
-
 
 function Player:check_collisions()
 	circle_cast(self)
@@ -301,7 +316,7 @@ end
 function Player:resolve_collision(collider)
 	if collider.is_shard ~= nil then
 		local index = color_index(collider.color) 
-		if index ~= nil then
+		if index ~= 1 then
 			if self.mp[index - 1] <= self.max_mp then
 				self.mp[index - 1] = self.mp[index - 1] + 1
 				setup_mana();
