@@ -9,7 +9,13 @@ function Status_table.new(obj)
 	setmetatable(status_table, {__index = Status_table})
 	status_table:add_status("parent", obj)
 	status_table:add_status("invincible", 60)
-	status_table:add_status("frostbitten", 60)
+	status_table:add_status("frostbitten", 60, 
+		function(obj, data)
+			obj.color = global_palette[3]
+			obj.speed = obj.speed / 2 print(obj.speed) end, 
+		function(obj, data) end, 
+		function(obj, data) 
+			obj.speed = obj.speed * 2 end)
 	status_table:add_status("airborne", 180)
 	status_table:add_status("staggered", 180)
 	status_table:add_status("stunned", 60)
@@ -18,7 +24,9 @@ function Status_table.new(obj)
 	status_table:add_status("reloading", 30)
 	status_table:add_status("hit", 180)
 	status_table:add_status("stunned", 60)
-	--print(status_table:get_parent())
+	status_table:add_status("override_move", 60)
+	status_table:add_status("knocked_back", 60, function(obj, data) end, function(obj, data) end, function(obj, data) end)
+	--animation_running_up(status_table:get_parent())
 	--print("arg1: ", arg[1], " arg2: ", arg[2])
 	--[[for ind, value in pairs(arg) do
 		print(arg[1], arg[2])
@@ -30,21 +38,29 @@ function Status_table.new(obj)
 	return status_table
 end
 
-function Status_table:add_status(string, timer_max)
+function Status_table:add_status(status_name, timer_max, on_start, effect, callback)
+	-- adds a table which keeps track of a particular status specified by status_name
+	-- on_start function is called once with object effected as argument on start
+	-- effect is called every update throughout status effect
+	-- callback is called once when the status effect ends
+	local on_start = on_start or function() return end
+	local effect = effect or function() return end
+	local callback = callback or function() return end
 	-- (name, current_timer, timer_max, currently_running)
 	local my_table = {}
 	
 	my_table["timer"] = timer_max
 	my_table["timer_max"] = timer_max
 	my_table["running"] = false
-	my_table['effect'] = function () return end
-	my_table['callback'] = function() print('success') return end
-	--print(my_table)
-	--my_table:callback()
-	
-	--print("before: ", #self)
-	self[string] = my_table
-	--print("after: ", self[string])
+	my_table['on_start'] = on_start
+	my_table['effect'] = effect
+	my_table['callback'] = callback
+	my_table['data'] = {}
+
+	self[status_name] = my_table
+	if status_name == "frostbitten" then
+		--print_table(my_table)
+	end
 
 end
 
@@ -53,15 +69,16 @@ function Status_table:update()
 	for ind, value in pairs(self) do
 		if value.running == true then
 			-- if the status effect is active, do this stuff
-			value.effect(self:get_parent())
+			if ind == 'frostbitten' then
+				--print_table(value)
+			end
+			value.effect(self:get_parent(), value.data)
 			
 			if value.timer <= 0 then
 				-- if counter for this status is <= 0, times up. Reset the counter, set "counting down" to false, and tell the parent somehow.
 				value.timer = value.timer_max
 				value.running = false
-				value.callback(self:get_parent())
-
-				
+				value.callback(self:get_parent(), value.data)
 			else
 				-- otherwise, countdown.
 				value.timer = value.timer - 1
@@ -70,26 +87,31 @@ function Status_table:update()
 	end
 end
 
-function Status_table:activate_status(...)
-	local t = {n=select('#',...),...}
+function Status_table:activate_status(t)
+	
 
-	setmetatable(t,{__index={timer_max = self[t[1]]['timer_max'], effect = function() return end, callback = function() print('kappa') return end}})
+	setmetatable(t,{__index={timer_max = self[t[1]]['timer_max'], on_start = self[t[1]]['on_start'], effect = self[t[1]]['effect'], callback = self[t[1]]['callback'], data = {}}})
 
-	local status, timer_max, effect, callback =
-		t[1] or 'frostbitten', -- default check frostbitten
+	local status, timer_max, on_start, effect, callback =
+		t[1],
 		t[2] or t['timer_max'],
-		t[3] or t['effect'],
-		t[4] or t['callback']
+		t[3] or t['on_start'],
+		t[4] or t['effect'],
+		t[5] or t['callback'],
+		t[6] or t['data']
 
-		if t[1] == 'hit' then
-			print(effect)
-			print(status)
-		end
+	if self[status]['running'] ~= true then
+		on_start(self:get_parent(), self[status]['data'])
+	end
+
 	self[status]['running'] = true
 	self[status]['timer_max'] = timer_max
 	self[status]['timer'] = timer_max
+	self[status]['on_start'] = on_start
 	self[status]['effect'] = effect
 	self[status]['callback'] = callback
+
+	
 end
 
 

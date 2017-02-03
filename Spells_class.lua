@@ -37,7 +37,6 @@ function Boomerang:_init(destination)
 	self.state = "outgoing"
 	self.global_index = add_object(global_obj_array,global_obj_pointer, self)
 	self.destination = destination
-	print_table(self.destination)
 
 end
 
@@ -81,7 +80,6 @@ function Boomerang:move()
 end
 
 function Boomerang:draw()
-
 	love.graphics.draw(self.sprite, self.x, self.y, self.angle, 1, 1, self.sprite:getHeight() / 2, self.sprite:getHeight()/ 2)
 end
 
@@ -147,9 +145,8 @@ function Freezing_field:check_collisions()
 	if self.collided_objs ~= nil then
 
 		for ind, value in pairs(self.collided_objs) do
-			value.speed = 1
-			value.color = global_palette[3]
-			value.status:activate_status('stunned', 60, function(obj) obj.speed = 0 end, function(obj) obj.speed = 0.5 end)
+			value.status:activate_status{'stunned', 60}
+			value.status:activate_status{'frostbitten', 360}
 		end
 	end
 end
@@ -165,7 +162,6 @@ function Freezing_field:draw(i)
 	if (i == 4) then
 		self.animation_hit:update(1)
 		for ind, value in pairs(self.collided_objs) do
-			print(value)
 			self.animation_hit:draw(self.sprite_hit, value.x, value.y)
 		end
 	end

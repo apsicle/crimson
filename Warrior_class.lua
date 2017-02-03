@@ -55,6 +55,7 @@ function Loopy_ghost:destroy()
 end
 
 function Loopy_ghost:move()
+	print(self.speed)
 	local dist_to_player = distance_obj(self, player);
 
 	if self.state == "moving" then
@@ -114,8 +115,8 @@ function Loopy_ghost:resolve_collision(collider)
 		local y_disp = player.y - self.y
 		self.destination.x = self.x - x_disp 
 		self.destination.y = self.y - y_disp
-		self.state = "hit"
-		self.status:activate_status('hit', 60, function() print('succesfesf') move_constant_speed(self, self.destination.x, self.destination.y, self.speed * 3) end, function() self.state = "moving" end)
+		self.state = "knocked_back"
+		self.status:activate_status{'knocked_back', 60, callback = function(obj) obj.state = "moving" end}
 	end
 end
 

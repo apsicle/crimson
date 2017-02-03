@@ -150,14 +150,23 @@ end
 
 function move_objects()
 	for key, value in pairs(global_obj_array) do
-		value:move()
-
-		if type(value.x) == 'table' then
-			print_table(value)
+		if value.status ~= nil then
+			-- it is an object that can be stunned
+			if value.status:check_status('stunned') == true then
+				-- if it is stunned, don't move it				
+			elseif value.status:check_status('override_move') == true then
+				-- let the effect from status stable perform move
+			else
+				-- move it normally
+			value:move()
+			end
+		else
+			-- if it is an object that cannot be stunned, move it
+			value:move()
 		end
+
 		--don't let objects move beyond walls
 		if value.x > global_width - 32 then
-
 			value.x = global_width - 32
 		end
 		if value.y > global_height - 32 then

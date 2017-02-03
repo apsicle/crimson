@@ -72,20 +72,21 @@ function Player:shoot()
 		local ydisp = math.sin(angle) * 32
 		--Bullet.new(self.x + xdisp, self.y + ydisp, self.N, angle, 10, self.radius / 4, self.color, 1, self.collision_group);
 		if self.facing == "up" then
-			Temporary_collider{x = self.x, y = self.y-32, damage = 1, radius = 32, effect = 'hit'}
-			Animation{x = self.x, y = self.y-32, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
+			Temporary_collider{x = self.x, y = self.y-32, damage = 1, radius = 32, effect = 'hit', color = self.color}
+			Animation{x = self.x, y = self.y-32, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16, 
+			{'knocked_back', 60, function() end, function(obj, data) move_constant_speed(obj, data.x, data.y, 5) end}}
 		elseif self.facing == "down" then
-			Temporary_collider{x = self.x, y = self.y+32, damage = 1, radius = 32, effect = 'hit'}
+			Temporary_collider{x = self.x, y = self.y+32, damage = 1, radius = 32, effect = 'hit', color = self.color}
 			Animation{x = self.x, y = self.y+32, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
 		elseif self.facing == "left" then
-			Temporary_collider{x = self.x-32, y = self.y, damage = 1, radius = 32, effect = 'hit'}
+			Temporary_collider{x = self.x-32, y = self.y, damage = 1, radius = 32, effect = 'hit', color = self.color}
 			Animation{x = self.x-32, y = self.y, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
 		elseif self.facing == "right" then
-			Temporary_collider{x = self.x+32, y = self.y, damage = 1, radius = 32, effect = 'hit'}
+			Temporary_collider{x = self.x+32, y = self.y, damage = 1, radius = 32, effect = 'hit', color = self.color}
 			Animation{x = self.x+32, y = self.y, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
 		end
 		
-		self.status:activate_status('reloading')
+		self.status:activate_status{'reloading'}
 	end
 end
 
@@ -202,10 +203,8 @@ function Player:move()
 			end
 
 			if self.status:check_status('reloading') ~= true then
-				print(self.facing)
-				print(destination)
 				Boomerang(destination)
-				self.status:activate_status('reloading')
+				self.status:activate_status{'reloading'}
 			end
 
 		end
@@ -213,13 +212,13 @@ function Player:move()
 		--Spells
 		if (love.keyboard.isDown('r')) then
 			if self.mp[1] > 10 then
-				self.status:activate_status('airborne', 180, function() end,
+				self.status:activate_status{'airborne', 180, function() end, function() end,
 					function(self) 
 						--Spells:shockwave(self, self.x, self.y) 
 						Temporary_collider{x = self.x, y = self.y, radius = 16, damage = 3}
 
-						self.status:activate_status('invincible', 60) end)
-				self.status:activate_status('jaunted', 180)
+						self.status:activate_status{'invincible', 60} end}
+				self.status:activate_status{'jaunted', 180}
 			end
 		end
 
@@ -329,7 +328,7 @@ function Player:resolve_collision(collider)
 	elseif self.status:check_status('invincible') ~= true then
 		self.hp = self.hp - collider.damage
 		setup_hearts();
-		self.status:activate_status('invincible', 60, function() print("finished") end)
+		self.status:activate_status{'invincible', 60}
 	end
 end
 

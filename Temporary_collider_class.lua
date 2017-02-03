@@ -12,15 +12,16 @@ setmetatable(Temporary_collider, {
 
 function Temporary_collider:_init(t)
 	setmetatable(t,{__index={x = 0, y = 0, speed=0, direction=0, sprite = nil, damage = 0, collision_group = player.collision_group, radius = 0, lifetime = 1, effect = nil}}) 
-	print_table(t)
-	self.x = t[1] or t.x
-	self.y = t[2] or t.y 
-	self.speed = t[3] or t.speed
-	self.sprite = t[4] or t.sprite
-	self.damage = t[5] or t.damage
-	self.collision_group = t[6] or t.collision_group
-	self.radius = t[7] or t.radius
-	self.timer = t[8] or t.lifetime
+	self.x = t.x
+	self.y = t.y 
+	self.speed = t.speed
+	self.sprite = t.sprite
+	self.damage = t.damage
+	self.color = t.color
+	self.collision_group = t.collision_group
+	self.radius = t.radius
+	self.timer = t.lifetime
+	self.effect_table = t.effect_table
 	self.global_index = add_object(global_obj_array, global_obj_pointer, self)
 end
 
@@ -39,14 +40,13 @@ function Temporary_collider:draw()
 end
 
 function Temporary_collider:move()
-	print_table(self)
 	circle_cast(self, radcheck)
 	return
 end
 
 function Temporary_collider:resolve_collision(collider)
-	if effect ~= nil then
-		--collider.activate_status(effect)
+	if effect_table ~= nil then
+		collider.activate_status{effect_table}
 	end
 	return
 end

@@ -188,6 +188,13 @@ function distance_obj(obj1, obj2)
 	return math.sqrt(sq(obj1.x - obj2.x) + sq(obj1.y - obj2.y))
 end
 
+function in_my_radius(self, obj)
+	if distance_obj_sq(self, obj) < (sq(self.radius)) then
+		return true
+	end
+	return false
+end
+
 function in_range(num, i, j)
 	return i <= num and j >= num 
 end
@@ -197,21 +204,23 @@ function move_constant_speed(self, x2, y2, speed)
 	local x_dist = x2 - self.x
 	local y_dist = y2 - self.y
 
-	-- if one or both of the displacements is 0 then the algorithm goes wonky because the divide by 0, so this covers that.
-	if x_dist == 0 then
-		if y_dist == 0 then
-			return true
-		else
-			self.y = self.y + sign(y_dist)*speed
-			return true
-		end
-	elseif	y_dist == 0 then
-		self.x = self.x + sign(x_dist)*speed
-		return true
-	end
-	
 	-- stops the movement at a certain distance from the other object for sanity's sake also because there's weird twitching when you don't do this.
 	if sq(x_dist) + sq(y_dist) > 10 then
+		
+		-- if one or both of the displacements is 0 then the algorithm goes wonky because the divide by 0, so this covers that.
+		if x_dist == 0 then
+			if y_dist == 0 then
+				return false
+			else
+				self.y = self.y + sign(y_dist)*speed
+				return true
+			end
+		elseif	y_dist == 0 then
+			self.x = self.x + sign(x_dist)*speed
+			return true
+		end
+	
+		-- Otherwise, move x and y proportionally according to speed.
 		local k = y_dist / x_dist
 		local theta = math.atan2(y_dist, x_dist);
 		local a = math.sin(theta) * speed
@@ -239,18 +248,7 @@ function print_table(table)
 end
 
 function radcheck(self, obj)
-	if self.radius == 20 then
-		print( self.radius)
-		print(obj.radius)
-	end
 	if distance_obj_sq(self, obj) < (sq(self.radius) + sq(obj.radius)) then
-		return true
-	end
-	return false
-end
-
-function in_my_radius(self, obj)
-	if distance_obj_sq(self, obj) < (sq(self.radius)) then
 		return true
 	end
 	return false
