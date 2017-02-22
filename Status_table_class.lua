@@ -10,11 +10,11 @@ function Status_table.new(obj)
 	status_table:add_status("parent", obj)
 	status_table:add_status("invincible", 60)
 	status_table:add_status("frostbitten", 60, 
-		function(obj, data)
+		function(obj, status)
 			obj.color = global_palette[3]
-			obj.speed = obj.speed / 2 print(obj.speed) end, 
-		function(obj, data) end, 
-		function(obj, data) 
+			obj.speed = obj.speed / 2 end, 
+		function(obj, status) end, 
+		function(obj, status) 
 			obj.speed = obj.speed * 2 end)
 	status_table:add_status("airborne", 180)
 	status_table:add_status("staggered", 180)
@@ -25,7 +25,22 @@ function Status_table.new(obj)
 	status_table:add_status("hit", 180)
 	status_table:add_status("stunned", 60)
 	status_table:add_status("override_move", 60)
-	status_table:add_status("knocked_back", 60, function(obj, data) end, function(obj, data) end, function(obj, data) end)
+	status_table:add_status("knocked_back", 60, 
+		function(obj, status) 
+			obj.status:activate_status{'override_move', 60}
+			print_table(status.data)
+			status.data.dest_x = obj.x - (status.data.x - obj.x)
+			status.data.dest_y = obj.y - (status.data.y - obj.y)
+			end, 
+		function(obj, status) 
+			if move_constant_speed(obj, status.data.dest_x, status.data.dest_y, 5) == false then
+				status.timer = 0
+			end
+			end, 
+		function(obj, status) 
+			obj.status:activate_status{'stunned', 60}
+			end)
+	status_table:add_status("ignore_collision_with", 60)
 	--animation_running_up(status_table:get_parent())
 	--print("arg1: ", arg[1], " arg2: ", arg[2])
 	--[[for ind, value in pairs(arg) do
@@ -72,13 +87,13 @@ function Status_table:update()
 			if ind == 'frostbitten' then
 				--print_table(value)
 			end
-			value.effect(self:get_parent(), value.data)
+			value.effect(self:get_parent(), value)
 			
 			if value.timer <= 0 then
 				-- if counter for this status is <= 0, times up. Reset the counter, set "counting down" to false, and tell the parent somehow.
 				value.timer = value.timer_max
 				value.running = false
-				value.callback(self:get_parent(), value.data)
+				value.callback(self:get_parent(), value)
 			else
 				-- otherwise, countdown.
 				value.timer = value.timer - 1
@@ -92,7 +107,7 @@ function Status_table:activate_status(t)
 
 	setmetatable(t,{__index={timer_max = self[t[1]]['timer_max'], on_start = self[t[1]]['on_start'], effect = self[t[1]]['effect'], callback = self[t[1]]['callback'], data = {}}})
 
-	local status, timer_max, on_start, effect, callback =
+	local status, timer_max, on_start, effect, callback, data =
 		t[1],
 		t[2] or t['timer_max'],
 		t[3] or t['on_start'],
@@ -100,22 +115,27 @@ function Status_table:activate_status(t)
 		t[5] or t['callback'],
 		t[6] or t['data']
 
-	if self[status]['running'] ~= true then
-		on_start(self:get_parent(), self[status]['data'])
-	end
-
-	self[status]['running'] = true
+	-- add every piece of info to the current timer call
 	self[status]['timer_max'] = timer_max
 	self[status]['timer'] = timer_max
 	self[status]['on_start'] = on_start
 	self[status]['effect'] = effect
 	self[status]['callback'] = callback
+	self[status]['data'] = data
 
+	-- if the current status is already activated, do not perform an on_start function call
+	if self[status]['running'] ~= true then
+		on_start(self:get_parent(), self[status])
+	end
+
+	-- start or restart the timer call.
+	self[status]['running'] = true
 	
 end
 
 
 function Status_table:get_parent()
+	-- hack. this returns the parent object.
 	return self.parent.timer_max
 end
 

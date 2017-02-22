@@ -41,7 +41,7 @@ end
 function Shard:draw(i)
 	if i == 1 then
 		love.graphics.setColor(self.color)
-		love.graphics.draw(self.sprite, self.x, self.y, 0, 1, 1)
+		love.graphics.draw(self.sprite, self.x, self.y, 0, 1, 1, self.sprite:getHeight() * 0.5, self.sprite:getHeight() * 0.5)
 		--self.sprite:draw();
 	end
 end

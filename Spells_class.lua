@@ -33,7 +33,7 @@ function Boomerang:_init(destination)
 	self.speed = 4
 	self.collision_group = 1
 	self.angle = 0;
-	self.radius = (self.sprite:getWidth() / 2)
+	self.radius = (self.sprite:getHeight() / 2)
 	self.state = "outgoing"
 	self.global_index = add_object(global_obj_array,global_obj_pointer, self)
 	self.destination = destination
@@ -75,7 +75,7 @@ end
 
 function Boomerang:move()
 	move_constant_speed(self, self.destination.x, self.destination.y, self.speed)
-	circle_cast(self, in_my_radius)
+	circle_cast(self, radcheck)
 	return
 end
 
@@ -145,8 +145,10 @@ function Freezing_field:check_collisions()
 	if self.collided_objs ~= nil then
 
 		for ind, value in pairs(self.collided_objs) do
-			value.status:activate_status{'stunned', 60}
-			value.status:activate_status{'frostbitten', 360}
+			if value.status ~= nil then
+				value.status:activate_status{'stunned', 60}
+				value.status:activate_status{'frostbitten', 360}
+			end
 		end
 	end
 end

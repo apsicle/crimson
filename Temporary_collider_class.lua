@@ -36,6 +36,7 @@ function Temporary_collider:draw()
 	if self.sprite ~= nil then
 		love.graphics.setColor(255,255,255)
 		love.graphics.draw(self.sprite, self.x, self.y)
+		love.graphics.ellipse('line', self.x, self.y, self.radius, self.radius)
 	end
 end
 
@@ -45,8 +46,10 @@ function Temporary_collider:move()
 end
 
 function Temporary_collider:resolve_collision(collider)
-	if effect_table ~= nil then
-		collider.activate_status{effect_table}
+	if self.effect_table ~= nil then
+		if collider.status ~= nil then
+			collider.status:activate_status(self.effect_table)
+		end
 	end
 	return
 end

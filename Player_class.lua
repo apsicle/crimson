@@ -16,7 +16,7 @@ function Player.new (x, y, N, collision_group)
 	player.N = N or 4
 	player.color = global_palette[1]
 	player.radius = 16;
-	player.speed = 3;
+	player.speed = 3.5;
 	player.damage = 0;
 	player.angle = 0;
 	player.status = Status_table.new(player)
@@ -68,21 +68,19 @@ end
 function Player:shoot()
 	if self.status:check_status('reloading') ~= true then
 		local angle = math.atan2(love.mouse.getY() - self.y, love.mouse.getX() - self.x);
-		local xdisp = math.cos(angle) * 32
-		local ydisp = math.sin(angle) * 32
 		--Bullet.new(self.x + xdisp, self.y + ydisp, self.N, angle, 10, self.radius / 4, self.color, 1, self.collision_group);
+
 		if self.facing == "up" then
-			Temporary_collider{x = self.x, y = self.y-32, damage = 1, radius = 32, effect = 'hit', color = self.color}
-			Animation{x = self.x, y = self.y-32, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16, 
-			{'knocked_back', 60, function() end, function(obj, data) move_constant_speed(obj, data.x, data.y, 5) end}}
+			Temporary_collider{x = self.x, y = self.y-32, damage = 1, radius = 32, color = self.color, effect_table = {'knocked_back', 60, data = {x = self.x, y = self.y}}}
+			Animation{x = self.x, y = self.y-32, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
 		elseif self.facing == "down" then
-			Temporary_collider{x = self.x, y = self.y+32, damage = 1, radius = 32, effect = 'hit', color = self.color}
+			Temporary_collider{x = self.x, y = self.y+32, damage = 1, radius = 32, color = self.color, effect_table = {'knocked_back', 60, data = {x = self.x, y = self.y}}}
 			Animation{x = self.x, y = self.y+32, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
 		elseif self.facing == "left" then
-			Temporary_collider{x = self.x-32, y = self.y, damage = 1, radius = 32, effect = 'hit', color = self.color}
+			Temporary_collider{x = self.x-32, y = self.y, damage = 1, radius = 32, color = self.color, effect_table = {'knocked_back', 60, data = {x = self.x, y = self.y}}}
 			Animation{x = self.x-32, y = self.y, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
 		elseif self.facing == "right" then
-			Temporary_collider{x = self.x+32, y = self.y, damage = 1, radius = 32, effect = 'hit', color = self.color}
+			Temporary_collider{x = self.x+32, y = self.y, damage = 1, radius = 32, color = self.color, effect_table = {'knocked_back', 60, data = {x = self.x, y = self.y}}}
 			Animation{x = self.x+32, y = self.y, sprite = love.graphics.newImage('sprites/left_strike1.png'), angle = 0, scale_x = 1, scale_y = 1, offset_x = 16, offset_y = 16}
 		end
 		
@@ -263,30 +261,30 @@ function Player:draw(i)
 				if self.state == "running" then
 					self.animation_running_up:resume()
 					self.animation_running_up:update(1)
-					self.animation_running_up:draw(self.sprite_running_up, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 32)
+					self.animation_running_up:draw(self.sprite_running_up, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 56)
 				else
 					self.animation_running_up:gotoFrame(1)
-					self.animation_running_up:draw(self.sprite_running_up, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 32)
+					self.animation_running_up:draw(self.sprite_running_up, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 56)
 				end
 			elseif self.facing == "down" then
 				if self.state == "running" then
 					self.animation_running_up:resume()
 					self.animation_running_up:update(1)
-					self.animation_running_up:draw(self.sprite_running_up, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 32)
+					self.animation_running_up:draw(self.sprite_running_up, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 56)
 				else
 					self.animation_running_up:gotoFrame(1)
-					self.animation_running_up:draw(self.sprite_running_up, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 32)
+					self.animation_running_up:draw(self.sprite_running_up, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 56)
 				end
 
 			elseif self.facing == "left" then
 				if self.state == "running" then
 					self.animation_running_side:resume()
 					self.animation_running_side:update(1)
-					self.animation_running_side:draw(self.sprite_running_side, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 32)
+					self.animation_running_side:draw(self.sprite_running_side, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 56)
 				else
 					local img = self.sprite_facing_side
 					local origin = {x = img:getWidth() * 0.5, y = img:getHeight() * 0.5}
-					love.graphics.draw(self.sprite_facing_side, self.sprite_x, self.sprite_y, 0, 1, 1, origin.x, origin.y)
+					love.graphics.draw(self.sprite_facing_side, self.sprite_x, self.sprite_y, 0, 1, 1, 32, 56)
 				end
 			elseif self.facing == "right" then
 				if self.state == "running" then
@@ -294,16 +292,16 @@ function Player:draw(i)
 					local origin = {x = img:getWidth() * 0.5, y = img:getHeight() * 0.5}
 					self.animation_running_side:resume()
 					self.animation_running_side:update(1)
-					self.animation_running_side:draw(self.sprite_running_side, self.sprite_x, self.sprite_y, 0, -1, 1, 32, 32)
+					self.animation_running_side:draw(self.sprite_running_side, self.sprite_x, self.sprite_y, 0, -1, 1, 32, 56)
 				else
 					local img = self.sprite_facing_side
 					local origin = {x = img:getWidth() * 0.5, y = img:getHeight() * 0.5}
-					love.graphics.draw(self.sprite_facing_side, self.sprite_x, self.sprite_y, 0, -1, 1, origin.x, origin.y)
+					love.graphics.draw(self.sprite_facing_side, self.sprite_x, self.sprite_y, 0, -1, 1, 32, 56)
 				end
 			end
 
 			love.graphics.setColor(11,180,214)
-			love.graphics.draw(self.hat, self.sprite_x, self.sprite_y, 0, 1, 1, 16, 48)
+			love.graphics.draw(self.hat, self.sprite_x, self.sprite_y, 0, 1, 1, 16, 72)
 		end
 	end
 end

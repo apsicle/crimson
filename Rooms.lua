@@ -227,7 +227,7 @@ function load_room(direction)
     --Ranger(500, 150, 5, 2, 16, global_palette[love.math.random(1, 5)], 1, 3)
     local ghosts = math.random(2,4)
     for i = 1, ghosts, 1 do
-        Enemy_spawner.new(math.random(100, 600), math.random(150, 500), 3, 4, 16, global_palette[love.math.random(1, 5)], 2)
+        Loopy_ghost_spawner.new(math.random(100, 600), math.random(150, 500), 0, 16, global_palette[love.math.random(1, 5)], 2)
     end
     local rangers = math.random(0, 1)
     for i = 1, rangers, 1 do
@@ -236,4 +236,16 @@ function load_room(direction)
    
 
 
+end
+
+Rooms_loader = {}
+function Rooms_loader.room1()
+    clear_all();
+    global_room_transition = 60
+    setup_terrain(cave_quads, cave_center_arr)
+
+
+    
+
+    Loopy_ghost.new(400, 400, 1, 16, self.color, 0.5, 2)
 end

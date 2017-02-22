@@ -84,8 +84,7 @@ function circle_cast(self, collision_func, return_objs)
 					elseif value.is_shard ~= nil then
 						--player object collides with shards no matter what
 						table.insert(collidable_objs, value)
-					elseif value.color ~= self.color then
-						--if you are different colors, you can collide
+					else
 						table.insert(collidable_objs, value)
 					end
 				end
@@ -232,18 +231,42 @@ function move_constant_speed(self, x2, y2, speed)
 	return false;
 end
 
-function on_tile(obj, x, y)
-	return in_range(obj.x, x * 32, x * 32 + 32) and in_range(obj.y, y * 32, y * 32 + 32)
-end
-
 function move_to_obj(obj_a, obj_b)
 	obj_a.x = obj_b.x
 	obj_a.y = obj_b.y
 end
 
+function on_tile(obj, x, y)
+	return in_range(obj.x, x * 32, x * 32 + 32) and in_range(obj.y, y * 32, y * 32 + 32)
+end
+
+function place_player()
+	local direction = player.facing
+	if direction == 'right' then
+        --move to left side of map
+        player.x = 0
+        player.y = (global_height_tiles - 1)*32 / 2
+    elseif direction == 'down' then
+        --move to top of map
+        player.x = (global_width_tiles - 1) * 32 / 2
+        player.y = 0
+    elseif direction == 'left' then
+        --move to right of map
+        player.x = (global_width_tiles - 1) * 32
+        player.y = (global_height_tiles - 1) * 32 / 2
+    elseif direction == 'up' then
+        --move to bottom of map
+        player.x = (global_width_tiles - 1) * 32 / 2
+        player.y = (global_height_tiles - 1) * 32
+    end
+end
+
 function print_table(table)
 	for i, v in pairs(table) do
 		print(i, v)
+	end
+	if(#table == 0) then
+		print('Table is empty!')
 	end
 end
 
@@ -289,7 +312,9 @@ function raycast(self, d, e)
 				if value.is_shard ~= nil then
 
 
-				elseif value.status:check_status("jaunted") then
+				elseif value.status ~= nil then
+					if value.status:check_status("jaunted") then
+					end
 
 
 				else

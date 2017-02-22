@@ -1,5 +1,6 @@
 -- Might be needed first
 require 'anim8'
+Menu = require 'menu'
 
 -- Utility
 require 'scripts'
@@ -11,17 +12,20 @@ require 'Ground_enemy_base_class'
 require 'Status_table_class'
 require 'Spell_table_class'
 
--- Derived classes / Independents
+-- Derived Classes
 require 'Player_class'
 require 'Spells_class'
 require 'Bullet_class'
 require 'Polygon_class'
-require 'Warrior_class'
-require 'Ranger_class'
-require 'Enemy_spawner_class'
 require 'Wall_class'
 require 'Shard_class'
 require 'Temporary_collider_class'
+
+-- Enemies
+require 'Loopy_ghost_class'
+require 'Ranger_class'
+require 'Loopy_ghost_spawner_class'
+
 
 -- Levels and World --
 require 'Rooms'
@@ -32,8 +36,42 @@ function love.load()
 -- Preloads
 	love.window.setMode(1024, 768)
 	music_src1 = love.audio.newSource("audio/sundara.ogg")
-	music_src1:setVolume(0.0)
-	music_src1:play()
+	music_src1:setVolume(0.3)
+	
+
+-- Menu Setup
+	paused = true
+	options = {debug = true}
+	main_menu = Menu.new()
+		main_menu:addItem{
+			name = 'Start Game',
+			action = function()
+				paused = false
+				music_src1:play()
+			end
+		}
+		main_menu:addItem{
+			name = 'Options',
+			action = function()
+				active_menu = options_menu
+			end
+		}
+		main_menu:addItem{
+			name = 'Quit',
+			action = function()
+				love.event.push('quit')
+			end
+		}
+	main_menu.parent = main_menu
+	active_menu = main_menu
+
+	options_menu = Menu.new(main_menu)
+		options_menu:addItem{
+			name = 'Toggle debug mode',
+			action = function()
+				options['debug'] = not options['debug']
+			end
+		}
 
 -- Setup globals
 	global_width = love.graphics.getWidth()
@@ -94,56 +132,72 @@ end
 
 function love.update()
 	-- create a new room if you are on the door ( top row, middle of row ) ---- ( middle row, first column ) ---- ( middle row, last column) ---- (last row, middle column)
-	
-	if global_room_transition <= 0 then
-		if on_tile(player, global_width_tiles / 2 - 1, 0) then
-			load_room('top')
-		elseif on_tile(player, 0, global_height_tiles / 2 - 1) then
-			load_room('left')
-		elseif on_tile(player, global_width_tiles - 1, global_height_tiles / 2 - 1) then
-			load_room('right')
-		elseif on_tile(player, global_width_tiles / 2 - 1, global_height_tiles - 1) then
-			load_room('bottom')
+	if paused == true then 
+		active_menu:update(10)
+	else
+		if global_room_transition <= 0 then
+			if on_tile(player, global_width_tiles / 2 - 1, 0) then
+				load_room('top')
+			elseif on_tile(player, 0, global_height_tiles / 2 - 1) then
+				load_room('left')
+			elseif on_tile(player, global_width_tiles - 1, global_height_tiles / 2 - 1) then
+				load_room('right')
+			elseif on_tile(player, global_width_tiles / 2 - 1, global_height_tiles - 1) then
+				load_room('bottom')
+			end
 		end
+		--Prevent things from moving out of the room
+		-- Update moving objects
+		global_room_transition = global_room_transition - 1;
+		update_objects();
+		move_objects();
 	end
 
-	--Prevent things from moving out of the room
 
-
-
-	-- Update moving objects
-	global_room_transition = global_room_transition - 1;
-	update_objects();
-	move_objects();
 
 end
 
 function love.draw()
+	if paused == true then
+		active_menu:draw(100, 200)
+	else
+		love.graphics.setColor(255,255,255)
+		love.graphics.draw(terrain_atlas)
+		
+		draw_objects();
 
-
-	love.graphics.setColor(255,255,255)
-	love.graphics.draw(terrain_atlas)
-	
-	draw_objects();
-
-	love.graphics.setColor(255,255,255)
-	--love.graphics.draw(image, x_pos, y_pos, rotation, scalex, scaley, xoffset, yoffset from origin)
-	
-	love.graphics.draw(manabars, global_width - manabars:getWidth() * 0.8, -10, 0, 1, 1)
-	love.graphics.draw(mana_atlas, global_width - manabars:getWidth() * 0.8, -10, 0, 1, 1)
-	love.graphics.draw(heart_atlas)
+		love.graphics.setColor(255,255,255)
+		--love.graphics.draw(image, x_pos, y_pos, rotation, scalex, scaley, xoffset, yoffset from origin)
+		
+		love.graphics.draw(manabars, global_width - manabars:getWidth() * 0.8, -10, 0, 1, 1)
+		love.graphics.draw(mana_atlas, global_width - manabars:getWidth() * 0.8, -10, 0, 1, 1)
+		love.graphics.draw(heart_atlas)
+	end
 
 end
 
-
+function love.keypressed(key)
+	active_menu:keypressed(key)
+end
 
 -- Unique callbacks
 function draw_objects()
-	for i = 1, 4, 1 do
-		for key, value in pairs(global_obj_array) do
-			
-			value:draw(i)
-			
+	if options['debug'] == true then
+		for i = 1, 4, 1 do
+			for key, value in pairs(global_obj_array) do
+				value:draw(i)
+
+				-- This section of code shows collision circles for debugging
+				if value.radius ~= nil then
+					love.graphics.ellipse('line', value.x, value.y, value.radius, value.radius)
+				end
+			end
+		end
+	else
+		for i = 1, 4, 1 do
+			for key, value in pairs(global_obj_array) do	
+				value:draw(i)
+			end
 		end
 	end
 end
